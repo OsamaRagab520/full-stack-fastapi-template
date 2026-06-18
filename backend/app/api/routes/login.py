@@ -1,7 +1,7 @@
 from datetime import timedelta
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from fastapi.responses import HTMLResponse
 from fastapi.security import OAuth2PasswordRequestForm
 
@@ -20,7 +20,12 @@ from app.utils import (
 router = APIRouter(tags=["login"])
 
 
-@router.post("/login/access-token")
+@router.post(
+    "/login/access-token",
+    responses={
+        status.HTTP_400_BAD_REQUEST: {"description": "Incorrect credentials or inactive user"},
+    },
+)
 def login_access_token(
     session: SessionDep, form_data: Annotated[OAuth2PasswordRequestForm, Depends()]
 ) -> Token:
@@ -31,9 +36,14 @@ def login_access_token(
         session=session, email=form_data.username, password=form_data.password
     )
     if not user:
-        raise HTTPException(status_code=400, detail="Incorrect email or password")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Incorrect email or password",
+        )
     elif not user.is_active:
-        raise HTTPException(status_code=400, detail="Inactive user")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Inactive user"
+        )
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     return Token(
         access_token=security.create_access_token(
@@ -51,7 +61,9 @@ def test_token(current_user: CurrentUser) -> Any:
 
 
 @router.post("/password-recovery/{email}")
-def recover_password(email: str, session: SessionDep) -> Message:
+def recover_password(
+    email: str, session: SessionDep, bg: BackgroundTasks
+) -> Message:
     """
     Password Recovery
     """
@@ -64,7 +76,8 @@ def recover_password(email: str, session: SessionDep) -> Message:
         email_data = generate_reset_password_email(
             email_to=user.email, email=email, token=password_reset_token
         )
-        send_email(
+        bg.add_task(
+            send_email,
             email_to=user.email,
             subject=email_data.subject,
             html_content=email_data.html_content,
@@ -74,20 +87,31 @@ def recover_password(email: str, session: SessionDep) -> Message:
     )
 
 
-@router.post("/reset-password/")
+@router.post(
+    "/reset-password/",
+    responses={
+        status.HTTP_400_BAD_REQUEST: {"description": "Invalid token or inactive user"},
+    },
+)
 def reset_password(session: SessionDep, body: NewPassword) -> Message:
     """
     Reset password
     """
     email = verify_password_reset_token(token=body.token)
     if not email:
-        raise HTTPException(status_code=400, detail="Invalid token")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid token"
+        )
     user = crud.get_user_by_email(session=session, email=email)
     if not user:
         # Don't reveal that the user doesn't exist - use same error as invalid token
-        raise HTTPException(status_code=400, detail="Invalid token")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid token"
+        )
     elif not user.is_active:
-        raise HTTPException(status_code=400, detail="Inactive user")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Inactive user"
+        )
     user_in_update = UserUpdate(password=body.new_password)
     crud.update_user(
         session=session,
@@ -101,6 +125,9 @@ def reset_password(session: SessionDep, body: NewPassword) -> Message:
     "/password-recovery-html-content/{email}",
     dependencies=[Depends(get_current_active_superuser)],
     response_class=HTMLResponse,
+    responses={
+        status.HTTP_404_NOT_FOUND: {"description": "User not found"},
+    },
 )
 def recover_password_html_content(email: str, session: SessionDep) -> Any:
     """
@@ -110,7 +137,7 @@ def recover_password_html_content(email: str, session: SessionDep) -> Any:
 
     if not user:
         raise HTTPException(
-            status_code=404,
+            status_code=status.HTTP_404_NOT_FOUND,
             detail="The user with this username does not exist in the system.",
         )
     password_reset_token = generate_password_reset_token(email=email)

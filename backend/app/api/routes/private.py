@@ -1,6 +1,6 @@
 from typing import Any
 
-from fastapi import APIRouter
+from fastapi import APIRouter, status
 from pydantic import BaseModel
 
 from app.api.deps import SessionDep
@@ -20,7 +20,7 @@ class PrivateUserCreate(BaseModel):
     is_verified: bool = False
 
 
-@router.post("/users/", response_model=UserPublic)
+@router.post("/users/", response_model=UserPublic, status_code=status.HTTP_201_CREATED)
 def create_user(user_in: PrivateUserCreate, session: SessionDep) -> Any:
     """
     Create a new user.
