@@ -60,3 +60,4 @@ async def update_user_password(
     db_user.hashed_password = get_password_hash(new_password)
     session.add(db_user)
     await session.commit()
+    await session.refresh(db_user)
