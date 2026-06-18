@@ -10,6 +10,7 @@ from app.emails.config import email_settings
 from app.emails.service import generate_new_account_email, send_email
 from app.models import Message
 from app.users import service as users_service
+from app.users.exceptions import EmailAlreadyInUseError, EmailAlreadyRegisteredError
 from app.users.models import User
 from app.users.schemas import (
     UpdatePassword,
@@ -63,7 +64,7 @@ async def create_user(
     """
     try:
         user = await users_service.create_user(session=session, user_create=user_in)
-    except ValueError:
+    except EmailAlreadyRegisteredError:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="The user with this email already exists in the system.",
@@ -98,7 +99,7 @@ async def update_user_me(
         user = await users_service.update_user_me(
             session=session, db_user=current_user, user_in=user_in
         )
-    except ValueError:
+    except EmailAlreadyInUseError:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="User with this email already exists",
@@ -178,7 +179,7 @@ async def register_user(session: SessionDep, user_in: UserRegister) -> Any:
     user_create = UserCreate.model_validate(user_in)
     try:
         user = await users_service.create_user(session=session, user_create=user_create)
-    except ValueError:
+    except EmailAlreadyRegisteredError:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="The user with this email already exists in the system",
@@ -243,7 +244,7 @@ async def update_user(
         db_user = await users_service.update_user(
             session=session, db_user=db_user, user_in=user_in
         )
-    except ValueError:
+    except EmailAlreadyInUseError:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="User with this email already exists",

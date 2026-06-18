@@ -2,6 +2,7 @@ from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.core.security import get_password_hash, verify_password
+from app.users.exceptions import EmailAlreadyInUseError, EmailAlreadyRegisteredError
 from app.users.models import User
 from app.users.schemas import UserCreate, UserUpdate, UserUpdateMe
 
@@ -11,7 +12,7 @@ DUMMY_HASH = "$argon2id$v=19$m=65536,t=3,p=4$MjQyZWE1MzBjYjJlZTI0Yw$YTU4NGM5ZTZm
 async def create_user(*, session: AsyncSession, user_create: UserCreate) -> User:
     existing = await get_user_by_email(session=session, email=user_create.email)
     if existing:
-        raise ValueError("email_already_registered")
+        raise EmailAlreadyRegisteredError
     db_obj = User.model_validate(
         user_create, update={"hashed_password": get_password_hash(user_create.password)}
     )
@@ -26,7 +27,7 @@ async def update_user(*, session: AsyncSession, db_user: User, user_in: UserUpda
     if "email" in user_data and user_data["email"]:
         existing = await get_user_by_email(session=session, email=user_data["email"])
         if existing and existing.id != db_user.id:
-            raise ValueError("email_already_in_use")
+            raise EmailAlreadyInUseError
     extra_data = {}
     if "password" in user_data:
         extra_data["hashed_password"] = get_password_hash(user_data["password"])
@@ -43,7 +44,7 @@ async def update_user_me(
     if user_in.email:
         existing = await get_user_by_email(session=session, email=user_in.email)
         if existing and existing.id != db_user.id:
-            raise ValueError("email_already_in_use")
+            raise EmailAlreadyInUseError
     user_data = user_in.model_dump(exclude_unset=True)
     db_user.sqlmodel_update(user_data)
     session.add(db_user)
