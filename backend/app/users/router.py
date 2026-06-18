@@ -2,7 +2,7 @@ import uuid
 from typing import Any
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
-from sqlmodel import func, select
+from sqlmodel import col, func, select
 
 from app.auth.dependencies import CurrentUser, SessionDep, get_current_active_superuser
 from app.core.security import verify_password
@@ -37,7 +37,7 @@ async def read_users(session: SessionDep, skip: int = 0, limit: int = 100) -> An
     count_statement = select(func.count()).select_from(User)
     count = (await session.exec(count_statement)).one()
 
-    statement = select(User).order_by(User.created_at.desc()).offset(skip).limit(limit)
+    statement = select(User).order_by(col(User.created_at).desc()).offset(skip).limit(limit)
     users = (await session.exec(statement)).all()
 
     return UsersPublic(data=users, count=count)

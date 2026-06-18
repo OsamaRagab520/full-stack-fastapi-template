@@ -19,4 +19,4 @@ async def create_item(
 
 async def delete_items_by_owner(*, session: AsyncSession, owner_id: uuid.UUID) -> None:
     statement = delete(Item).where(col(Item.owner_id) == owner_id)
-    await session.exec(statement)  # type: ignore
+    await session.exec(statement)
