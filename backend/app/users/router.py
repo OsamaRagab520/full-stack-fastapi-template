@@ -7,6 +7,7 @@ from sqlmodel import func, select
 from app.auth.dependencies import CurrentUser, SessionDep, get_current_active_superuser
 from app.core.config import settings
 from app.core.security import verify_password
+from app.email.config import email_settings
 from app.items import service as items_service
 from app.models import Message
 from app.users import service as users_service
@@ -66,7 +67,7 @@ async def create_user(
         )
 
     user = await users_service.create_user(session=session, user_create=user_in)
-    if settings.emails_enabled and user_in.email:
+    if email_settings.emails_enabled and user_in.email:
         email_data = generate_new_account_email(
             email_to=user_in.email, username=user_in.email, password=user_in.password
         )
