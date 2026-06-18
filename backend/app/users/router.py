@@ -5,7 +5,6 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from sqlmodel import func, select
 
 from app.auth.dependencies import CurrentUser, SessionDep, get_current_active_superuser
-from app.core.config import settings
 from app.core.security import verify_password
 from app.email.config import email_settings
 from app.items import service as items_service

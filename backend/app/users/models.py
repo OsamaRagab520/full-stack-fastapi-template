@@ -1,13 +1,17 @@
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
+from typing import TYPE_CHECKING
 
 from pydantic import EmailStr
 from sqlalchemy import DateTime
 from sqlmodel import Field, Relationship, SQLModel
 
+if TYPE_CHECKING:
+    from app.items.models import Item
+
 
 def _utc_now() -> datetime:
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 class UserBase(SQLModel):
