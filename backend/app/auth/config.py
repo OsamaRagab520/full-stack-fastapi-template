@@ -1,8 +1,8 @@
 import secrets
 import warnings
+from typing import Self
 
 from pydantic import model_validator
-from typing_extensions import Self
 
 from app.core.config import AppBaseConfig
 

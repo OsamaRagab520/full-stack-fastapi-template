@@ -1,5 +1,5 @@
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
-from typing import AsyncGenerator
 
 import sentry_sdk
 from fastapi import FastAPI
@@ -17,7 +17,7 @@ def custom_generate_unique_id(route: APIRoute) -> str:
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
     if settings.SENTRY_DSN and settings.ENVIRONMENT != "local":
         sentry_sdk.init(dsn=str(settings.SENTRY_DSN), enable_tracing=True)
     yield
