@@ -81,7 +81,7 @@ def generate_reset_password_email(email_to: str, email: str, token: str) -> Emai
 
 
 def generate_new_account_email(
-    email_to: str, username: str, password: str
+    email_to: str, username: str
 ) -> EmailData:
     subject = f"{settings.PROJECT_NAME} - New account for user {username}"
     html_content = render_email_template(
@@ -89,7 +89,6 @@ def generate_new_account_email(
         context={
             "project_name": settings.PROJECT_NAME,
             "username": username,
-            "password": password,
             "email": email_to,
             "link": settings.FRONTEND_HOST,
         },

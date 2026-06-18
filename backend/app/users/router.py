@@ -70,7 +70,7 @@ async def create_user(
         )
     if email_settings.emails_enabled and user_in.email:
         email_data = generate_new_account_email(
-            email_to=user_in.email, username=user_in.email, password=user_in.password
+            email_to=user_in.email, username=user_in.email
         )
         bg.add_task(
             send_email,
