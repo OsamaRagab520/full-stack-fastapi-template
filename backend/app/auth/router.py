@@ -28,13 +28,13 @@ router = APIRouter(tags=["login"])
         status.HTTP_400_BAD_REQUEST: {"description": "Incorrect credentials or inactive user"},
     },
 )
-def login_access_token(
+async def login_access_token(
     session: SessionDep, form_data: Annotated[OAuth2PasswordRequestForm, Depends()]
 ) -> Token:
     """
     OAuth2 compatible token login, get an access token for future requests
     """
-    user = users_service.authenticate(
+    user = await users_service.authenticate(
         session=session, email=form_data.username, password=form_data.password
     )
     if not user:
@@ -55,7 +55,7 @@ def login_access_token(
 
 
 @router.post("/login/test-token", response_model=UserPublic)
-def test_token(current_user: CurrentUser) -> Any:
+async def test_token(current_user: CurrentUser) -> Any:
     """
     Test access token
     """
@@ -63,13 +63,13 @@ def test_token(current_user: CurrentUser) -> Any:
 
 
 @router.post("/password-recovery/{email}")
-def recover_password(
+async def recover_password(
     email: str, session: SessionDep, bg: BackgroundTasks
 ) -> Message:
     """
     Password Recovery
     """
-    user = users_service.get_user_by_email(session=session, email=email)
+    user = await users_service.get_user_by_email(session=session, email=email)
 
     if user:
         password_reset_token = generate_password_reset_token(email=email)
@@ -93,7 +93,7 @@ def recover_password(
         status.HTTP_400_BAD_REQUEST: {"description": "Invalid token or inactive user"},
     },
 )
-def reset_password(session: SessionDep, body: NewPassword) -> Message:
+async def reset_password(session: SessionDep, body: NewPassword) -> Message:
     """
     Reset password
     """
@@ -102,7 +102,7 @@ def reset_password(session: SessionDep, body: NewPassword) -> Message:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid token"
         )
-    user = users_service.get_user_by_email(session=session, email=email)
+    user = await users_service.get_user_by_email(session=session, email=email)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid token"
@@ -112,7 +112,7 @@ def reset_password(session: SessionDep, body: NewPassword) -> Message:
             status_code=status.HTTP_400_BAD_REQUEST, detail="Inactive user"
         )
     user_in_update = UserUpdate(password=body.new_password)
-    users_service.update_user(
+    await users_service.update_user(
         session=session,
         db_user=user,
         user_in=user_in_update,
@@ -128,11 +128,11 @@ def reset_password(session: SessionDep, body: NewPassword) -> Message:
         status.HTTP_404_NOT_FOUND: {"description": "User not found"},
     },
 )
-def recover_password_html_content(email: str, session: SessionDep) -> Any:
+async def recover_password_html_content(email: str, session: SessionDep) -> Any:
     """
     HTML Content for Password Recovery
     """
-    user = users_service.get_user_by_email(session=session, email=email)
+    user = await users_service.get_user_by_email(session=session, email=email)
 
     if not user:
         raise HTTPException(
