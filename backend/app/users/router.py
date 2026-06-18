@@ -2,21 +2,17 @@ import uuid
 from typing import Any
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
-from sqlmodel import col, delete, func, select
+from sqlmodel import func, select
 
-from app import crud
-from app.api.deps import (
-    CurrentUser,
-    SessionDep,
-    get_current_active_superuser,
-)
+from app.auth.dependencies import CurrentUser, SessionDep, get_current_active_superuser
 from app.core.config import settings
 from app.core.security import verify_password
-from app.models import (
-    Item,
-    Message,
+from app.items import service as items_service
+from app.models import Message
+from app.users import service as users_service
+from app.users.models import User
+from app.users.schemas import (
     UpdatePassword,
-    User,
     UserCreate,
     UserPublic,
     UserRegister,
@@ -62,14 +58,14 @@ def create_user(
     """
     Create new user.
     """
-    user = crud.get_user_by_email(session=session, email=user_in.email)
+    user = users_service.get_user_by_email(session=session, email=user_in.email)
     if user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="The user with this email already exists in the system.",
         )
 
-    user = crud.create_user(session=session, user_create=user_in)
+    user = users_service.create_user(session=session, user_create=user_in)
     if settings.emails_enabled and user_in.email:
         email_data = generate_new_account_email(
             email_to=user_in.email, username=user_in.email, password=user_in.password
@@ -97,7 +93,7 @@ def update_user_me(
     Update own user.
     """
     if user_in.email:
-        existing_user = crud.get_user_by_email(session=session, email=user_in.email)
+        existing_user = users_service.get_user_by_email(session=session, email=user_in.email)
         if existing_user and existing_user.id != current_user.id:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
@@ -134,7 +130,7 @@ def update_password_me(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="New password cannot be the same as the current one",
         )
-    crud.update_user_password(
+    users_service.update_user_password(
         session=session, db_user=current_user, new_password=body.new_password
     )
     return Message(message="Password updated successfully")
@@ -181,14 +177,14 @@ def register_user(session: SessionDep, user_in: UserRegister) -> Any:
     """
     Create new user without the need to be logged in.
     """
-    user = crud.get_user_by_email(session=session, email=user_in.email)
+    user = users_service.get_user_by_email(session=session, email=user_in.email)
     if user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="The user with this email already exists in the system",
         )
     user_create = UserCreate.model_validate(user_in)
-    user = crud.create_user(session=session, user_create=user_create)
+    user = users_service.create_user(session=session, user_create=user_create)
     return user
 
 
@@ -246,14 +242,14 @@ def update_user(
             detail="The user with this id does not exist in the system",
         )
     if user_in.email:
-        existing_user = crud.get_user_by_email(session=session, email=user_in.email)
+        existing_user = users_service.get_user_by_email(session=session, email=user_in.email)
         if existing_user and existing_user.id != user_id:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail="User with this email already exists",
             )
 
-    db_user = crud.update_user(session=session, db_user=db_user, user_in=user_in)
+    db_user = users_service.update_user(session=session, db_user=db_user, user_in=user_in)
     return db_user
 
 
@@ -281,8 +277,7 @@ def delete_user(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Super users are not allowed to delete themselves",
         )
-    statement = delete(Item).where(col(Item.owner_id) == user_id)
-    session.exec(statement)  # type: ignore
+    items_service.delete_items_by_owner(session=session, owner_id=user_id)
     session.delete(user)
     session.commit()
     return Message(message="User deleted successfully")

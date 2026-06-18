@@ -5,11 +5,13 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from fastapi.responses import HTMLResponse
 from fastapi.security import OAuth2PasswordRequestForm
 
-from app import crud
-from app.api.deps import CurrentUser, SessionDep, get_current_active_superuser
+from app.auth.dependencies import CurrentUser, SessionDep, get_current_active_superuser
+from app.auth.schemas import NewPassword, Token
 from app.core import security
 from app.core.config import settings
-from app.models import Message, NewPassword, Token, UserPublic, UserUpdate
+from app.models import Message
+from app.users import service as users_service
+from app.users.schemas import UserPublic, UserUpdate
 from app.utils import (
     generate_password_reset_token,
     generate_reset_password_email,
@@ -32,7 +34,7 @@ def login_access_token(
     """
     OAuth2 compatible token login, get an access token for future requests
     """
-    user = crud.authenticate(
+    user = users_service.authenticate(
         session=session, email=form_data.username, password=form_data.password
     )
     if not user:
@@ -67,10 +69,8 @@ def recover_password(
     """
     Password Recovery
     """
-    user = crud.get_user_by_email(session=session, email=email)
+    user = users_service.get_user_by_email(session=session, email=email)
 
-    # Always return the same response to prevent email enumeration attacks
-    # Only send email if user actually exists
     if user:
         password_reset_token = generate_password_reset_token(email=email)
         email_data = generate_reset_password_email(
@@ -102,9 +102,8 @@ def reset_password(session: SessionDep, body: NewPassword) -> Message:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid token"
         )
-    user = crud.get_user_by_email(session=session, email=email)
+    user = users_service.get_user_by_email(session=session, email=email)
     if not user:
-        # Don't reveal that the user doesn't exist - use same error as invalid token
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid token"
         )
@@ -113,7 +112,7 @@ def reset_password(session: SessionDep, body: NewPassword) -> Message:
             status_code=status.HTTP_400_BAD_REQUEST, detail="Inactive user"
         )
     user_in_update = UserUpdate(password=body.new_password)
-    crud.update_user(
+    users_service.update_user(
         session=session,
         db_user=user,
         user_in=user_in_update,
@@ -133,7 +132,7 @@ def recover_password_html_content(email: str, session: SessionDep) -> Any:
     """
     HTML Content for Password Recovery
     """
-    user = crud.get_user_by_email(session=session, email=email)
+    user = users_service.get_user_by_email(session=session, email=email)
 
     if not user:
         raise HTTPException(
