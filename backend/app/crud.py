@@ -60,6 +60,12 @@ def authenticate(*, session: Session, email: str, password: str) -> User | None:
     return db_user
 
 
+def update_user_password(*, session: Session, db_user: User, new_password: str) -> None:
+    db_user.hashed_password = get_password_hash(new_password)
+    session.add(db_user)
+    session.commit()
+
+
 def create_item(*, session: Session, item_in: ItemCreate, owner_id: uuid.UUID) -> Item:
     db_item = Item.model_validate(item_in, update={"owner_id": owner_id})
     session.add(db_item)

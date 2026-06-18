@@ -1,8 +1,8 @@
 import uuid
 from typing import Any
 
-from fastapi import APIRouter, HTTPException
-from sqlmodel import col, func, select
+from fastapi import APIRouter, HTTPException, status
+from sqlmodel import func, select
 
 from app.api.deps import CurrentUser, SessionDep
 from app.models import Item, ItemCreate, ItemPublic, ItemsPublic, ItemUpdate, Message
@@ -17,12 +17,11 @@ def read_items(
     """
     Retrieve items.
     """
-
     if current_user.is_superuser:
         count_statement = select(func.count()).select_from(Item)
         count = session.exec(count_statement).one()
         statement = (
-            select(Item).order_by(col(Item.created_at).desc()).offset(skip).limit(limit)
+            select(Item).order_by(Item.created_at.desc()).offset(skip).limit(limit)
         )
         items = session.exec(statement).all()
     else:
@@ -35,30 +34,44 @@ def read_items(
         statement = (
             select(Item)
             .where(Item.owner_id == current_user.id)
-            .order_by(col(Item.created_at).desc())
+            .order_by(Item.created_at.desc())
             .offset(skip)
             .limit(limit)
         )
         items = session.exec(statement).all()
 
-    items_public = [ItemPublic.model_validate(item) for item in items]
-    return ItemsPublic(data=items_public, count=count)
+    return ItemsPublic(data=items, count=count)
 
 
-@router.get("/{id}", response_model=ItemPublic)
+@router.get(
+    "/{id}",
+    response_model=ItemPublic,
+    responses={
+        status.HTTP_403_FORBIDDEN: {"description": "Not enough permissions"},
+        status.HTTP_404_NOT_FOUND: {"description": "Item not found"},
+    },
+)
 def read_item(session: SessionDep, current_user: CurrentUser, id: uuid.UUID) -> Any:
     """
     Get item by ID.
     """
     item = session.get(Item, id)
     if not item:
-        raise HTTPException(status_code=404, detail="Item not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Item not found"
+        )
     if not current_user.is_superuser and (item.owner_id != current_user.id):
-        raise HTTPException(status_code=403, detail="Not enough permissions")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Not enough permissions"
+        )
     return item
 
 
-@router.post("/", response_model=ItemPublic)
+@router.post(
+    "/",
+    response_model=ItemPublic,
+    status_code=status.HTTP_201_CREATED,
+)
 def create_item(
     *, session: SessionDep, current_user: CurrentUser, item_in: ItemCreate
 ) -> Any:
@@ -72,7 +85,14 @@ def create_item(
     return item
 
 
-@router.put("/{id}", response_model=ItemPublic)
+@router.put(
+    "/{id}",
+    response_model=ItemPublic,
+    responses={
+        status.HTTP_403_FORBIDDEN: {"description": "Not enough permissions"},
+        status.HTTP_404_NOT_FOUND: {"description": "Item not found"},
+    },
+)
 def update_item(
     *,
     session: SessionDep,
@@ -85,9 +105,13 @@ def update_item(
     """
     item = session.get(Item, id)
     if not item:
-        raise HTTPException(status_code=404, detail="Item not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Item not found"
+        )
     if not current_user.is_superuser and (item.owner_id != current_user.id):
-        raise HTTPException(status_code=403, detail="Not enough permissions")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Not enough permissions"
+        )
     update_dict = item_in.model_dump(exclude_unset=True)
     item.sqlmodel_update(update_dict)
     session.add(item)
@@ -96,7 +120,13 @@ def update_item(
     return item
 
 
-@router.delete("/{id}")
+@router.delete(
+    "/{id}",
+    responses={
+        status.HTTP_403_FORBIDDEN: {"description": "Not enough permissions"},
+        status.HTTP_404_NOT_FOUND: {"description": "Item not found"},
+    },
+)
 def delete_item(
     session: SessionDep, current_user: CurrentUser, id: uuid.UUID
 ) -> Message:
@@ -105,9 +135,13 @@ def delete_item(
     """
     item = session.get(Item, id)
     if not item:
-        raise HTTPException(status_code=404, detail="Item not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Item not found"
+        )
     if not current_user.is_superuser and (item.owner_id != current_user.id):
-        raise HTTPException(status_code=403, detail="Not enough permissions")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Not enough permissions"
+        )
     session.delete(item)
     session.commit()
     return Message(message="Item deleted successfully")
