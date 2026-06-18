@@ -4,7 +4,7 @@ from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.core.config import settings
-from app.models import User
+from app.users.models import User
 
 pytestmark = pytest.mark.anyio
 

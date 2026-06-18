@@ -1,20 +1,20 @@
 from typing import Any
 
 from fastapi import APIRouter, status
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
+from sqlmodel import Field
 
-from app.api.deps import SessionDep
-from app.models import UserPublic
+from app.auth.dependencies import SessionDep
 from app.users import service as users_service
-from app.users.schemas import UserCreate
+from app.users.schemas import UserCreate, UserPublic
 
 router = APIRouter(tags=["private"], prefix="/private")
 
 
 class PrivateUserCreate(BaseModel):
-    email: str
-    password: str
-    full_name: str
+    email: EmailStr
+    password: str = Field(min_length=8, max_length=128)
+    full_name: str = Field(max_length=255)
     is_verified: bool = False
 
 

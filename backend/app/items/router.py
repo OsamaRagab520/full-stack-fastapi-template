@@ -31,28 +31,17 @@ async def read_items(
     """
     Retrieve items.
     """
-    if current_user.is_superuser:
-        count_statement = select(func.count()).select_from(Item)
-        count = (await session.exec(count_statement)).one()
-        statement = (
-            select(Item).order_by(col(Item.created_at).desc()).offset(skip).limit(limit)
-        )
-        items = (await session.exec(statement)).all()
-    else:
-        count_statement = (
-            select(func.count())
-            .select_from(Item)
-            .where(Item.owner_id == current_user.id)
-        )
-        count = (await session.exec(count_statement)).one()
-        statement = (
-            select(Item)
-            .where(Item.owner_id == current_user.id)
-            .order_by(col(Item.created_at).desc())
-            .offset(skip)
-            .limit(limit)
-        )
-        items = (await session.exec(statement)).all()
+    where_clause = None if current_user.is_superuser else (Item.owner_id == current_user.id)
+
+    count_stmt = select(func.count()).select_from(Item)
+    item_stmt = select(Item).order_by(col(Item.created_at).desc()).offset(skip).limit(limit)
+
+    if where_clause is not None:
+        count_stmt = count_stmt.where(where_clause)
+        item_stmt = item_stmt.where(where_clause)
+
+    count = (await session.exec(count_stmt)).one()
+    items = (await session.exec(item_stmt)).all()
 
     return ItemsPublic(data=items, count=count)
 
@@ -97,7 +86,7 @@ async def create_item(
     return item
 
 
-@router.put(
+@router.patch(
     "/{id}",
     response_model=ItemPublic,
     responses={

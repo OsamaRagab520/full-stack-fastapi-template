@@ -1,7 +1,7 @@
 from fastapi import APIRouter, BackgroundTasks, Depends, status
 from pydantic.networks import EmailStr
 
-from app.api.deps import get_current_active_superuser
+from app.auth.dependencies import get_current_active_superuser
 from app.email.service import generate_test_email, send_email
 from app.models import Message
 
@@ -11,7 +11,7 @@ router = APIRouter(prefix="/utils", tags=["utils"])
 @router.post(
     "/test-email/",
     dependencies=[Depends(get_current_active_superuser)],
-    status_code=status.HTTP_201_CREATED,
+    status_code=status.HTTP_202_ACCEPTED,
 )
 async def test_email(email_to: EmailStr, bg: BackgroundTasks) -> Message:
     """

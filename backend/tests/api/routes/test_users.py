@@ -6,10 +6,11 @@ from httpx import AsyncClient
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from app import crud
 from app.core.config import settings
 from app.core.security import verify_password
-from app.models import User, UserCreate
+from app.users import service as users_service
+from app.users.models import User
+from app.users.schemas import UserCreate
 from tests.utils.user import create_random_user
 from tests.utils.utils import random_email, random_lower_string
 
@@ -61,7 +62,7 @@ async def test_create_user_new_email(
         )
         assert 200 <= r.status_code < 300
         created_user = r.json()
-        user = await crud.get_user_by_email(session=db, email=username)
+        user = await users_service.get_user_by_email(session=db, email=username)
         assert user
         assert user.email == created_user["email"]
 
@@ -72,7 +73,7 @@ async def test_get_existing_user_as_superuser(
     username = random_email()
     password = random_lower_string()
     user_in = UserCreate(email=username, password=password)
-    user = await crud.create_user(session=db, user_create=user_in)
+    user = await users_service.create_user(session=db, user_create=user_in)
     user_id = user.id
     r = await client.get(
         f"{settings.API_V1_STR}/users/{user_id}",
@@ -80,7 +81,7 @@ async def test_get_existing_user_as_superuser(
     )
     assert 200 <= r.status_code < 300
     api_user = r.json()
-    existing_user = await crud.get_user_by_email(session=db, email=username)
+    existing_user = await users_service.get_user_by_email(session=db, email=username)
     assert existing_user
     assert existing_user.email == api_user["email"]
 
@@ -102,7 +103,7 @@ async def test_get_existing_user_current_user(
     username = random_email()
     password = random_lower_string()
     user_in = UserCreate(email=username, password=password)
-    user = await crud.create_user(session=db, user_create=user_in)
+    user = await users_service.create_user(session=db, user_create=user_in)
     user_id = user.id
 
     login_data = {
@@ -122,7 +123,7 @@ async def test_get_existing_user_current_user(
     )
     assert 200 <= r.status_code < 300
     api_user = r.json()
-    existing_user = await crud.get_user_by_email(session=db, email=username)
+    existing_user = await users_service.get_user_by_email(session=db, email=username)
     assert existing_user
     assert existing_user.email == api_user["email"]
 
@@ -162,7 +163,7 @@ async def test_create_user_existing_username(
     username = random_email()
     password = random_lower_string()
     user_in = UserCreate(email=username, password=password)
-    await crud.create_user(session=db, user_create=user_in)
+    await users_service.create_user(session=db, user_create=user_in)
     data = {"email": username, "password": password}
     r = await client.post(
         f"{settings.API_V1_STR}/users/",
@@ -194,12 +195,12 @@ async def test_retrieve_users(
     username = random_email()
     password = random_lower_string()
     user_in = UserCreate(email=username, password=password)
-    await crud.create_user(session=db, user_create=user_in)
+    await users_service.create_user(session=db, user_create=user_in)
 
     username2 = random_email()
     password2 = random_lower_string()
     user_in2 = UserCreate(email=username2, password=password2)
-    await crud.create_user(session=db, user_create=user_in2)
+    await users_service.create_user(session=db, user_create=user_in2)
 
     r = await client.get(
         f"{settings.API_V1_STR}/users/", headers=superuser_token_headers
@@ -299,7 +300,7 @@ async def test_update_user_me_email_exists(
     username = random_email()
     password = random_lower_string()
     user_in = UserCreate(email=username, password=password)
-    user = await crud.create_user(session=db, user_create=user_in)
+    user = await users_service.create_user(session=db, user_create=user_in)
 
     data = {"email": user.email}
     r = await client.patch(
@@ -375,7 +376,7 @@ async def test_update_user(
     username = random_email()
     password = random_lower_string()
     user_in = UserCreate(email=username, password=password)
-    user = await crud.create_user(session=db, user_create=user_in)
+    user = await users_service.create_user(session=db, user_create=user_in)
 
     data = {"full_name": "Updated_full_name"}
     r = await client.patch(
@@ -414,12 +415,12 @@ async def test_update_user_email_exists(
     username = random_email()
     password = random_lower_string()
     user_in = UserCreate(email=username, password=password)
-    user = await crud.create_user(session=db, user_create=user_in)
+    user = await users_service.create_user(session=db, user_create=user_in)
 
     username2 = random_email()
     password2 = random_lower_string()
     user_in2 = UserCreate(email=username2, password=password2)
-    user2 = await crud.create_user(session=db, user_create=user_in2)
+    user2 = await users_service.create_user(session=db, user_create=user_in2)
 
     data = {"email": user2.email}
     r = await client.patch(
@@ -435,7 +436,7 @@ async def test_delete_user_me(client: AsyncClient, db: AsyncSession) -> None:
     username = random_email()
     password = random_lower_string()
     user_in = UserCreate(email=username, password=password)
-    user = await crud.create_user(session=db, user_create=user_in)
+    user = await users_service.create_user(session=db, user_create=user_in)
     user_id = user.id
 
     login_data = {
@@ -485,7 +486,7 @@ async def test_delete_user_super_user(
     username = random_email()
     password = random_lower_string()
     user_in = UserCreate(email=username, password=password)
-    user = await crud.create_user(session=db, user_create=user_in)
+    user = await users_service.create_user(session=db, user_create=user_in)
     user_id = user.id
     r = await client.delete(
         f"{settings.API_V1_STR}/users/{user_id}",
@@ -513,7 +514,7 @@ async def test_delete_user_not_found(
 async def test_delete_user_current_super_user_error(
     client: AsyncClient, superuser_token_headers: dict[str, str], db: AsyncSession
 ) -> None:
-    super_user = await crud.get_user_by_email(
+    super_user = await users_service.get_user_by_email(
         session=db, email=settings.FIRST_SUPERUSER
     )
     assert super_user
@@ -533,7 +534,7 @@ async def test_delete_user_without_privileges(
     username = random_email()
     password = random_lower_string()
     user_in = UserCreate(email=username, password=password)
-    user = await crud.create_user(session=db, user_create=user_in)
+    user = await users_service.create_user(session=db, user_create=user_in)
 
     r = await client.delete(
         f"{settings.API_V1_STR}/users/{user.id}",

@@ -87,7 +87,7 @@ async def test_update_item(
 ) -> None:
     item = await create_random_item(db)
     data = {"title": "Updated title", "description": "Updated description"}
-    response = await client.put(
+    response = await client.patch(
         f"{settings.API_V1_STR}/items/{item.id}",
         headers=superuser_token_headers,
         json=data,
@@ -104,7 +104,7 @@ async def test_update_item_not_found(
     client: AsyncClient, superuser_token_headers: dict[str, str]
 ) -> None:
     data = {"title": "Updated title", "description": "Updated description"}
-    response = await client.put(
+    response = await client.patch(
         f"{settings.API_V1_STR}/items/{uuid.uuid4()}",
         headers=superuser_token_headers,
         json=data,
@@ -119,7 +119,7 @@ async def test_update_item_not_enough_permissions(
 ) -> None:
     item = await create_random_item(db)
     data = {"title": "Updated title", "description": "Updated description"}
-    response = await client.put(
+    response = await client.patch(
         f"{settings.API_V1_STR}/items/{item.id}",
         headers=normal_user_token_headers,
         json=data,
