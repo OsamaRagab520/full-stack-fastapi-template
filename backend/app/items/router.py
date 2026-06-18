@@ -2,7 +2,7 @@ import uuid
 from typing import Any
 
 from fastapi import APIRouter, HTTPException, status
-from sqlmodel import func, select
+from sqlmodel import col, func, select
 
 from app.auth.dependencies import CurrentUser, SessionDep
 from app.items import service as items_service
@@ -24,7 +24,7 @@ async def read_items(
         count_statement = select(func.count()).select_from(Item)
         count = (await session.exec(count_statement)).one()
         statement = (
-            select(Item).order_by(Item.created_at.desc()).offset(skip).limit(limit)
+            select(Item).order_by(col(Item.created_at).desc()).offset(skip).limit(limit)
         )
         items = (await session.exec(statement)).all()
     else:
@@ -37,7 +37,7 @@ async def read_items(
         statement = (
             select(Item)
             .where(Item.owner_id == current_user.id)
-            .order_by(Item.created_at.desc())
+            .order_by(col(Item.created_at).desc())
             .offset(skip)
             .limit(limit)
         )

@@ -10,8 +10,8 @@ Import directly from domain packages in new code:
 from sqlmodel import SQLModel
 
 from app.auth.schemas import NewPassword, Token, TokenPayload
-from app.items.models import Item
-from app.items.schemas import ItemBase, ItemCreate, ItemPublic, ItemsPublic, ItemUpdate
+from app.items.models import Item, ItemBase
+from app.items.schemas import ItemCreate, ItemPublic, ItemsPublic, ItemUpdate
 from app.users.models import User, UserBase
 from app.users.schemas import (
     UpdatePassword,

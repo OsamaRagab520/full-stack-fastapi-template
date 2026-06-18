@@ -5,7 +5,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from app.core.config import settings
 
 async_engine = create_async_engine(str(settings.SQLALCHEMY_DATABASE_URI), pool_pre_ping=True)
-AsyncSessionFactory = async_sessionmaker(async_engine, expire_on_commit=False)
+AsyncSessionFactory = async_sessionmaker(async_engine, class_=AsyncSession, expire_on_commit=False)
 
 
 async def init_db(session: AsyncSession) -> None:

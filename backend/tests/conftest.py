@@ -31,8 +31,8 @@ async def db() -> AsyncGenerator[AsyncSession, None]:
     async with AsyncSession(_test_engine, expire_on_commit=False) as session:
         await init_db(session)
         yield session
-        await session.exec(delete(Item))  # type: ignore
-        await session.exec(delete(User))  # type: ignore
+        await session.exec(delete(Item))
+        await session.exec(delete(User))
         await session.commit()
 
 

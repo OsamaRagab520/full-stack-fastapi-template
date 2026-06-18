@@ -30,4 +30,4 @@ class AuthConfig(AppBaseConfig):
         return self
 
 
-auth_settings = AuthConfig()  # type: ignore
+auth_settings = AuthConfig()
