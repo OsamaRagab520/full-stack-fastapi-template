@@ -15,7 +15,6 @@ class PrivateUserCreate(BaseModel):
     email: EmailStr
     password: str = Field(min_length=8, max_length=128)
     full_name: str = Field(max_length=255)
-    is_verified: bool = False
 
 
 @router.post("/users/", response_model=UserPublic, status_code=status.HTTP_201_CREATED)
