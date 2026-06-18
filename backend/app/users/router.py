@@ -43,7 +43,7 @@ async def read_users(
     statement = select(User).order_by(col(User.created_at).desc()).offset(skip).limit(limit)
     users = (await session.exec(statement)).all()
 
-    return UsersPublic(data=users, count=count)
+    return {"data": users, "count": count}
 
 
 @router.post(
@@ -61,14 +61,13 @@ async def create_user(
     """
     Create new user.
     """
-    user = await users_service.get_user_by_email(session=session, email=user_in.email)
-    if user:
+    try:
+        user = await users_service.create_user(session=session, user_create=user_in)
+    except ValueError:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="The user with this email already exists in the system.",
         )
-
-    user = await users_service.create_user(session=session, user_create=user_in)
     if email_settings.emails_enabled and user_in.email:
         email_data = generate_new_account_email(
             email_to=user_in.email, username=user_in.email, password=user_in.password
@@ -95,21 +94,16 @@ async def update_user_me(
     """
     Update own user.
     """
-    if user_in.email:
-        existing_user = await users_service.get_user_by_email(
-            session=session, email=user_in.email
+    try:
+        user = await users_service.update_user_data(
+            session=session, db_user=current_user, user_in=user_in
         )
-        if existing_user and existing_user.id != current_user.id:
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail="User with this email already exists",
-            )
-    user_data = user_in.model_dump(exclude_unset=True)
-    current_user.sqlmodel_update(user_data)
-    session.add(current_user)
-    await session.commit()
-    await session.refresh(current_user)
-    return current_user
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="User with this email already exists",
+        )
+    return user
 
 
 @router.patch(
@@ -165,8 +159,7 @@ async def delete_user_me(session: SessionDep, current_user: CurrentUser) -> Any:
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Super users are not allowed to delete themselves",
         )
-    await session.delete(current_user)
-    await session.commit()
+    await users_service.delete_user(session=session, db_user=current_user)
     return Message(message="User deleted successfully")
 
 
@@ -182,14 +175,14 @@ async def register_user(session: SessionDep, user_in: UserRegister) -> Any:
     """
     Create new user without the need to be logged in.
     """
-    user = await users_service.get_user_by_email(session=session, email=user_in.email)
-    if user:
+    user_create = UserCreate.model_validate(user_in)
+    try:
+        user = await users_service.create_user(session=session, user_create=user_create)
+    except ValueError:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="The user with this email already exists in the system",
         )
-    user_create = UserCreate.model_validate(user_in)
-    user = await users_service.create_user(session=session, user_create=user_create)
     return user
 
 
@@ -246,19 +239,15 @@ async def update_user(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="The user with this id does not exist in the system",
         )
-    if user_in.email:
-        existing_user = await users_service.get_user_by_email(
-            session=session, email=user_in.email
+    try:
+        db_user = await users_service.update_user(
+            session=session, db_user=db_user, user_in=user_in
         )
-        if existing_user and existing_user.id != user_id:
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail="User with this email already exists",
-            )
-
-    db_user = await users_service.update_user(
-        session=session, db_user=db_user, user_in=user_in
-    )
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="User with this email already exists",
+        )
     return db_user
 
 
@@ -286,6 +275,5 @@ async def delete_user(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Super users are not allowed to delete themselves",
         )
-    await session.delete(user)
-    await session.commit()
+    await users_service.delete_user(session=session, db_user=user)
     return Message(message="User deleted successfully")

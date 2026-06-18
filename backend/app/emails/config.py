@@ -1,13 +1,9 @@
 from pydantic import EmailStr, computed_field
-from pydantic_settings import BaseSettings, SettingsConfigDict
+
+from app.core.config import AppBaseConfig
 
 
-class EmailConfig(BaseSettings):
-    model_config = SettingsConfigDict(
-        env_file="../.env",
-        env_ignore_empty=True,
-        extra="ignore",
-    )
+class EmailConfig(AppBaseConfig):
     SMTP_TLS: bool = True
     SMTP_SSL: bool = False
     SMTP_PORT: int = 587

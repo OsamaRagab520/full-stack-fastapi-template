@@ -47,10 +47,10 @@ async def test_create_user_new_email(
     client: AsyncClient, superuser_token_headers: dict[str, str], db: AsyncSession
 ) -> None:
     with (
-        patch("app.email.service.send_email", return_value=None),
-        patch("app.email.config.email_settings.SMTP_HOST", "smtp.example.com"),
-        patch("app.email.config.email_settings.SMTP_USER", "admin@example.com"),
-        patch("app.email.config.email_settings.EMAILS_FROM_EMAIL", "admin@example.com"),
+        patch("app.users.router.send_email", return_value=None),
+        patch("app.emails.config.email_settings.SMTP_HOST", "smtp.example.com"),
+        patch("app.emails.config.email_settings.SMTP_USER", "admin@example.com"),
+        patch("app.emails.config.email_settings.EMAILS_FROM_EMAIL", "admin@example.com"),
     ):
         username = random_email()
         password = random_lower_string()
@@ -60,7 +60,7 @@ async def test_create_user_new_email(
             headers=superuser_token_headers,
             json=data,
         )
-        assert 200 <= r.status_code < 300
+        assert r.status_code == 201
         created_user = r.json()
         user = await users_service.get_user_by_email(session=db, email=username)
         assert user

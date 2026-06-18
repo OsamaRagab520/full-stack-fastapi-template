@@ -43,7 +43,7 @@ async def read_items(
     count = (await session.exec(count_stmt)).one()
     items = (await session.exec(item_stmt)).all()
 
-    return ItemsPublic(data=items, count=count)
+    return {"data": items, "count": count}
 
 
 @router.get(
@@ -110,12 +110,7 @@ async def update_item(
             status_code=status.HTTP_404_NOT_FOUND, detail="Item not found"
         )
     _assert_item_access(item, current_user)
-    update_dict = item_in.model_dump(exclude_unset=True)
-    item.sqlmodel_update(update_dict)
-    session.add(item)
-    await session.commit()
-    await session.refresh(item)
-    return item
+    return await items_service.update_item(session=session, db_item=item, item_in=item_in)
 
 
 @router.delete(
@@ -137,6 +132,5 @@ async def delete_item(
             status_code=status.HTTP_404_NOT_FOUND, detail="Item not found"
         )
     _assert_item_access(item, current_user)
-    await session.delete(item)
-    await session.commit()
+    await items_service.delete_item(session=session, db_item=item)
     return Message(message="Item deleted successfully")

@@ -32,7 +32,8 @@ def send_email(
     subject: str = "",
     html_content: str = "",
 ) -> None:
-    assert email_settings.emails_enabled, "no provided configuration for email variables"
+    if not email_settings.emails_enabled:
+        raise RuntimeError("no provided configuration for email variables")
     message = emails.Message(
         subject=subject,
         html=html_content,
