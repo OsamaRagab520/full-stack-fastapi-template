@@ -46,7 +46,7 @@ async def test_create_user_new_email(
     client: AsyncClient, superuser_token_headers: dict[str, str], db: AsyncSession
 ) -> None:
     with (
-        patch("app.utils.send_email", return_value=None),
+        patch("app.email.service.send_email", return_value=None),
         patch("app.email.config.email_settings.SMTP_HOST", "smtp.example.com"),
         patch("app.email.config.email_settings.SMTP_USER", "admin@example.com"),
         patch("app.email.config.email_settings.EMAILS_FROM_EMAIL", "admin@example.com"),

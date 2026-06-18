@@ -1,6 +1,5 @@
 import uuid
 
-from sqlmodel import col, delete
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.items.models import Item
@@ -15,8 +14,3 @@ async def create_item(
     await session.commit()
     await session.refresh(db_item)
     return db_item
-
-
-async def delete_items_by_owner(*, session: AsyncSession, owner_id: uuid.UUID) -> None:
-    statement = delete(Item).where(col(Item.owner_id) == owner_id)
-    await session.exec(statement)

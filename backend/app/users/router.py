@@ -7,7 +7,7 @@ from sqlmodel import col, func, select
 from app.auth.dependencies import CurrentUser, SessionDep, get_current_active_superuser
 from app.core.security import verify_password
 from app.email.config import email_settings
-from app.items import service as items_service
+from app.email.service import generate_new_account_email, send_email
 from app.models import Message
 from app.users import service as users_service
 from app.users.models import User
@@ -20,7 +20,6 @@ from app.users.schemas import (
     UserUpdate,
     UserUpdateMe,
 )
-from app.utils import generate_new_account_email, send_email
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -287,7 +286,6 @@ async def delete_user(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Super users are not allowed to delete themselves",
         )
-    await items_service.delete_items_by_owner(session=session, owner_id=user_id)
     await session.delete(user)
     await session.commit()
     return Message(message="User deleted successfully")

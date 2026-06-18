@@ -8,7 +8,6 @@ Import directly from domain packages in new code:
   from app.auth.schemas import Token, TokenPayload, NewPassword
 """
 from pydantic import BaseModel
-from sqlmodel import SQLModel
 
 from app.auth.schemas import NewPassword, Token, TokenPayload
 from app.items.models import Item, ItemBase

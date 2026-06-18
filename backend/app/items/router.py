@@ -9,8 +9,16 @@ from app.items import service as items_service
 from app.items.models import Item
 from app.items.schemas import ItemCreate, ItemPublic, ItemsPublic, ItemUpdate
 from app.models import Message
+from app.users.models import User
 
 router = APIRouter(prefix="/items", tags=["items"])
+
+
+def _assert_item_access(item: Item, user: User) -> None:
+    if not user.is_superuser and item.owner_id != user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Not enough permissions"
+        )
 
 
 @router.get("/", response_model=ItemsPublic)
@@ -68,10 +76,7 @@ async def read_item(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Item not found"
         )
-    if not current_user.is_superuser and (item.owner_id != current_user.id):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Not enough permissions"
-        )
+    _assert_item_access(item, current_user)
     return item
 
 
@@ -115,10 +120,7 @@ async def update_item(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Item not found"
         )
-    if not current_user.is_superuser and (item.owner_id != current_user.id):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Not enough permissions"
-        )
+    _assert_item_access(item, current_user)
     update_dict = item_in.model_dump(exclude_unset=True)
     item.sqlmodel_update(update_dict)
     session.add(item)
@@ -145,10 +147,7 @@ async def delete_item(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Item not found"
         )
-    if not current_user.is_superuser and (item.owner_id != current_user.id):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Not enough permissions"
-        )
+    _assert_item_access(item, current_user)
     await session.delete(item)
     await session.commit()
     return Message(message="Item deleted successfully")
