@@ -30,15 +30,15 @@ router = APIRouter(prefix="/users", tags=["users"])
     dependencies=[Depends(get_current_active_superuser)],
     response_model=UsersPublic,
 )
-def read_users(session: SessionDep, skip: int = 0, limit: int = 100) -> Any:
+async def read_users(session: SessionDep, skip: int = 0, limit: int = 100) -> Any:
     """
     Retrieve users.
     """
     count_statement = select(func.count()).select_from(User)
-    count = session.exec(count_statement).one()
+    count = (await session.exec(count_statement)).one()
 
     statement = select(User).order_by(User.created_at.desc()).offset(skip).limit(limit)
-    users = session.exec(statement).all()
+    users = (await session.exec(statement)).all()
 
     return UsersPublic(data=users, count=count)
 
@@ -52,20 +52,20 @@ def read_users(session: SessionDep, skip: int = 0, limit: int = 100) -> Any:
         status.HTTP_400_BAD_REQUEST: {"description": "Email already registered"},
     },
 )
-def create_user(
+async def create_user(
     *, session: SessionDep, user_in: UserCreate, bg: BackgroundTasks
 ) -> Any:
     """
     Create new user.
     """
-    user = users_service.get_user_by_email(session=session, email=user_in.email)
+    user = await users_service.get_user_by_email(session=session, email=user_in.email)
     if user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="The user with this email already exists in the system.",
         )
 
-    user = users_service.create_user(session=session, user_create=user_in)
+    user = await users_service.create_user(session=session, user_create=user_in)
     if settings.emails_enabled and user_in.email:
         email_data = generate_new_account_email(
             email_to=user_in.email, username=user_in.email, password=user_in.password
@@ -86,14 +86,16 @@ def create_user(
         status.HTTP_409_CONFLICT: {"description": "Email already in use"},
     },
 )
-def update_user_me(
+async def update_user_me(
     *, session: SessionDep, user_in: UserUpdateMe, current_user: CurrentUser
 ) -> Any:
     """
     Update own user.
     """
     if user_in.email:
-        existing_user = users_service.get_user_by_email(session=session, email=user_in.email)
+        existing_user = await users_service.get_user_by_email(
+            session=session, email=user_in.email
+        )
         if existing_user and existing_user.id != current_user.id:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
@@ -102,8 +104,8 @@ def update_user_me(
     user_data = user_in.model_dump(exclude_unset=True)
     current_user.sqlmodel_update(user_data)
     session.add(current_user)
-    session.commit()
-    session.refresh(current_user)
+    await session.commit()
+    await session.refresh(current_user)
     return current_user
 
 
@@ -114,7 +116,7 @@ def update_user_me(
         status.HTTP_400_BAD_REQUEST: {"description": "Wrong current password or same password"},
     },
 )
-def update_password_me(
+async def update_password_me(
     *, session: SessionDep, body: UpdatePassword, current_user: CurrentUser
 ) -> Any:
     """
@@ -130,14 +132,14 @@ def update_password_me(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="New password cannot be the same as the current one",
         )
-    users_service.update_user_password(
+    await users_service.update_user_password(
         session=session, db_user=current_user, new_password=body.new_password
     )
     return Message(message="Password updated successfully")
 
 
 @router.get("/me", response_model=UserPublic)
-def read_user_me(current_user: CurrentUser) -> Any:
+async def read_user_me(current_user: CurrentUser) -> Any:
     """
     Get current user.
     """
@@ -151,7 +153,7 @@ def read_user_me(current_user: CurrentUser) -> Any:
         status.HTTP_403_FORBIDDEN: {"description": "Superusers cannot delete themselves"},
     },
 )
-def delete_user_me(session: SessionDep, current_user: CurrentUser) -> Any:
+async def delete_user_me(session: SessionDep, current_user: CurrentUser) -> Any:
     """
     Delete own user.
     """
@@ -160,8 +162,8 @@ def delete_user_me(session: SessionDep, current_user: CurrentUser) -> Any:
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Super users are not allowed to delete themselves",
         )
-    session.delete(current_user)
-    session.commit()
+    await session.delete(current_user)
+    await session.commit()
     return Message(message="User deleted successfully")
 
 
@@ -173,18 +175,18 @@ def delete_user_me(session: SessionDep, current_user: CurrentUser) -> Any:
         status.HTTP_400_BAD_REQUEST: {"description": "Email already registered"},
     },
 )
-def register_user(session: SessionDep, user_in: UserRegister) -> Any:
+async def register_user(session: SessionDep, user_in: UserRegister) -> Any:
     """
     Create new user without the need to be logged in.
     """
-    user = users_service.get_user_by_email(session=session, email=user_in.email)
+    user = await users_service.get_user_by_email(session=session, email=user_in.email)
     if user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="The user with this email already exists in the system",
         )
     user_create = UserCreate.model_validate(user_in)
-    user = users_service.create_user(session=session, user_create=user_create)
+    user = await users_service.create_user(session=session, user_create=user_create)
     return user
 
 
@@ -196,13 +198,13 @@ def register_user(session: SessionDep, user_in: UserRegister) -> Any:
         status.HTTP_404_NOT_FOUND: {"description": "User not found"},
     },
 )
-def read_user_by_id(
+async def read_user_by_id(
     user_id: uuid.UUID, session: SessionDep, current_user: CurrentUser
 ) -> Any:
     """
     Get a specific user by id.
     """
-    user = session.get(User, user_id)
+    user = await session.get(User, user_id)
     if user == current_user:
         return user
     if not current_user.is_superuser:
@@ -226,7 +228,7 @@ def read_user_by_id(
         status.HTTP_409_CONFLICT: {"description": "Email already in use"},
     },
 )
-def update_user(
+async def update_user(
     *,
     session: SessionDep,
     user_id: uuid.UUID,
@@ -235,21 +237,25 @@ def update_user(
     """
     Update a user.
     """
-    db_user = session.get(User, user_id)
+    db_user = await session.get(User, user_id)
     if not db_user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="The user with this id does not exist in the system",
         )
     if user_in.email:
-        existing_user = users_service.get_user_by_email(session=session, email=user_in.email)
+        existing_user = await users_service.get_user_by_email(
+            session=session, email=user_in.email
+        )
         if existing_user and existing_user.id != user_id:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail="User with this email already exists",
             )
 
-    db_user = users_service.update_user(session=session, db_user=db_user, user_in=user_in)
+    db_user = await users_service.update_user(
+        session=session, db_user=db_user, user_in=user_in
+    )
     return db_user
 
 
@@ -261,13 +267,13 @@ def update_user(
         status.HTTP_404_NOT_FOUND: {"description": "User not found"},
     },
 )
-def delete_user(
+async def delete_user(
     session: SessionDep, current_user: CurrentUser, user_id: uuid.UUID
 ) -> Message:
     """
     Delete a user.
     """
-    user = session.get(User, user_id)
+    user = await session.get(User, user_id)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
@@ -277,7 +283,7 @@ def delete_user(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Super users are not allowed to delete themselves",
         )
-    items_service.delete_items_by_owner(session=session, owner_id=user_id)
-    session.delete(user)
-    session.commit()
+    await items_service.delete_items_by_owner(session=session, owner_id=user_id)
+    await session.delete(user)
+    await session.commit()
     return Message(message="User deleted successfully")

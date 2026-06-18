@@ -14,7 +14,7 @@ router = APIRouter(prefix="/items", tags=["items"])
 
 
 @router.get("/", response_model=ItemsPublic)
-def read_items(
+async def read_items(
     session: SessionDep, current_user: CurrentUser, skip: int = 0, limit: int = 100
 ) -> Any:
     """
@@ -22,18 +22,18 @@ def read_items(
     """
     if current_user.is_superuser:
         count_statement = select(func.count()).select_from(Item)
-        count = session.exec(count_statement).one()
+        count = (await session.exec(count_statement)).one()
         statement = (
             select(Item).order_by(Item.created_at.desc()).offset(skip).limit(limit)
         )
-        items = session.exec(statement).all()
+        items = (await session.exec(statement)).all()
     else:
         count_statement = (
             select(func.count())
             .select_from(Item)
             .where(Item.owner_id == current_user.id)
         )
-        count = session.exec(count_statement).one()
+        count = (await session.exec(count_statement)).one()
         statement = (
             select(Item)
             .where(Item.owner_id == current_user.id)
@@ -41,7 +41,7 @@ def read_items(
             .offset(skip)
             .limit(limit)
         )
-        items = session.exec(statement).all()
+        items = (await session.exec(statement)).all()
 
     return ItemsPublic(data=items, count=count)
 
@@ -54,11 +54,13 @@ def read_items(
         status.HTTP_404_NOT_FOUND: {"description": "Item not found"},
     },
 )
-def read_item(session: SessionDep, current_user: CurrentUser, id: uuid.UUID) -> Any:
+async def read_item(
+    session: SessionDep, current_user: CurrentUser, id: uuid.UUID
+) -> Any:
     """
     Get item by ID.
     """
-    item = session.get(Item, id)
+    item = await session.get(Item, id)
     if not item:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Item not found"
@@ -75,13 +77,13 @@ def read_item(session: SessionDep, current_user: CurrentUser, id: uuid.UUID) -> 
     response_model=ItemPublic,
     status_code=status.HTTP_201_CREATED,
 )
-def create_item(
+async def create_item(
     *, session: SessionDep, current_user: CurrentUser, item_in: ItemCreate
 ) -> Any:
     """
     Create new item.
     """
-    item = items_service.create_item(
+    item = await items_service.create_item(
         session=session, item_in=item_in, owner_id=current_user.id
     )
     return item
@@ -95,7 +97,7 @@ def create_item(
         status.HTTP_404_NOT_FOUND: {"description": "Item not found"},
     },
 )
-def update_item(
+async def update_item(
     *,
     session: SessionDep,
     current_user: CurrentUser,
@@ -105,7 +107,7 @@ def update_item(
     """
     Update an item.
     """
-    item = session.get(Item, id)
+    item = await session.get(Item, id)
     if not item:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Item not found"
@@ -117,8 +119,8 @@ def update_item(
     update_dict = item_in.model_dump(exclude_unset=True)
     item.sqlmodel_update(update_dict)
     session.add(item)
-    session.commit()
-    session.refresh(item)
+    await session.commit()
+    await session.refresh(item)
     return item
 
 
@@ -129,13 +131,13 @@ def update_item(
         status.HTTP_404_NOT_FOUND: {"description": "Item not found"},
     },
 )
-def delete_item(
+async def delete_item(
     session: SessionDep, current_user: CurrentUser, id: uuid.UUID
 ) -> Message:
     """
     Delete an item.
     """
-    item = session.get(Item, id)
+    item = await session.get(Item, id)
     if not item:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Item not found"
@@ -144,6 +146,6 @@ def delete_item(
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail="Not enough permissions"
         )
-    session.delete(item)
-    session.commit()
+    await session.delete(item)
+    await session.commit()
     return Message(message="Item deleted successfully")
