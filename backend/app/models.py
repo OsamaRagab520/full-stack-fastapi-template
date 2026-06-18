@@ -7,6 +7,7 @@ Import directly from domain packages in new code:
   from app.items.schemas import ItemCreate, ItemPublic
   from app.auth.schemas import Token, TokenPayload, NewPassword
 """
+from pydantic import BaseModel
 from sqlmodel import SQLModel
 
 from app.auth.schemas import NewPassword, Token, TokenPayload
@@ -24,7 +25,7 @@ from app.users.schemas import (
 )
 
 
-class Message(SQLModel):
+class Message(BaseModel):
     message: str
 
 
