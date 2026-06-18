@@ -37,7 +37,7 @@ async def update_user(*, session: AsyncSession, db_user: User, user_in: UserUpda
     return db_user
 
 
-async def update_user_data(
+async def update_user_me(
     *, session: AsyncSession, db_user: User, user_in: UserUpdateMe
 ) -> User:
     if user_in.email:

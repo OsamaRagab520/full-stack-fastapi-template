@@ -26,6 +26,10 @@ def create_access_token(subject: str | Any, expires_delta: timedelta) -> str:
     return encoded_jwt
 
 
+def decode_token(token: str) -> dict[str, Any]:
+    return jwt.decode(token, auth_settings.SECRET_KEY, algorithms=[ALGORITHM])
+
+
 def verify_password(
     plain_password: str, hashed_password: str
 ) -> tuple[bool, str | None]:

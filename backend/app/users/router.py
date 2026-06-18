@@ -95,7 +95,7 @@ async def update_user_me(
     Update own user.
     """
     try:
-        user = await users_service.update_user_data(
+        user = await users_service.update_user_me(
             session=session, db_user=current_user, user_in=user_in
         )
     except ValueError:
