@@ -8,7 +8,7 @@ from jinja2 import Template
 
 from app.auth.config import auth_settings
 from app.core.config import settings
-from app.email.config import email_settings
+from app.emails.config import email_settings
 
 logger = logging.getLogger(__name__)
 

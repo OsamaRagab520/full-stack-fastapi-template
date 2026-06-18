@@ -10,7 +10,7 @@ from app.auth.dependencies import CurrentUser, SessionDep, get_current_active_su
 from app.auth.schemas import NewPassword, Token
 from app.auth.tokens import generate_password_reset_token, verify_password_reset_token
 from app.core import security
-from app.email.service import generate_reset_password_email, send_email
+from app.emails.service import generate_reset_password_email, send_email
 from app.models import Message
 from app.users import service as users_service
 from app.users.schemas import UserPublic, UserUpdate

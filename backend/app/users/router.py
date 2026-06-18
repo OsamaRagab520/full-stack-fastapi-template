@@ -6,8 +6,8 @@ from sqlmodel import col, func, select
 
 from app.auth.dependencies import CurrentUser, SessionDep, get_current_active_superuser
 from app.core.security import verify_password
-from app.email.config import email_settings
-from app.email.service import generate_new_account_email, send_email
+from app.emails.config import email_settings
+from app.emails.service import generate_new_account_email, send_email
 from app.models import Message
 from app.users import service as users_service
 from app.users.models import User
