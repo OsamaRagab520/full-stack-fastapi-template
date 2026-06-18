@@ -1,7 +1,7 @@
 import uuid
 from typing import Any
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
 from sqlmodel import col, func, select
 
 from app.auth.dependencies import CurrentUser, SessionDep, get_current_active_superuser
@@ -30,7 +30,11 @@ router = APIRouter(prefix="/users", tags=["users"])
     dependencies=[Depends(get_current_active_superuser)],
     response_model=UsersPublic,
 )
-async def read_users(session: SessionDep, skip: int = 0, limit: int = 100) -> Any:
+async def read_users(
+    session: SessionDep,
+    skip: int = Query(default=0, ge=0),
+    limit: int = Query(default=100, ge=1, le=200),
+) -> Any:
     """
     Retrieve users.
     """
@@ -205,16 +209,16 @@ async def read_user_by_id(
     Get a specific user by id.
     """
     user = await session.get(User, user_id)
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+        )
     if user == current_user:
         return user
     if not current_user.is_superuser:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="The user doesn't have enough privileges",
-        )
-    if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
         )
     return user
 
