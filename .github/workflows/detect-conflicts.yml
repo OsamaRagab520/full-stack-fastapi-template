@@ -1,8 +1,6 @@
 name: "Conflict detector"
 on:
-  push:
-  pull_request_target: # zizmor: ignore[dangerous-triggers]
-    types: [synchronize]
+  workflow_dispatch: # disabled
 
 permissions: {}
 

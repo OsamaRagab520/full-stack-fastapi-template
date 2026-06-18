@@ -1,13 +1,6 @@
 name: Labels
 on:
-  pull_request_target: # zizmor: ignore[dangerous-triggers]
-    types:
-      - opened
-      - synchronize
-      - reopened
-      # For label-checker
-      - labeled
-      - unlabeled
+  workflow_dispatch: # disabled
 
 permissions: {}
 

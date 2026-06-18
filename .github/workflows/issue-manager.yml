@@ -1,18 +1,7 @@
 name: Issue Manager
 
 on:
-  schedule:
-    - cron: "21 17 * * *"
-  issue_comment:
-    types:
-      - created
-  issues:
-    types:
-      - labeled
-  pull_request_target: # zizmor: ignore[dangerous-triggers]
-    types:
-      - labeled
-  workflow_dispatch:
+  workflow_dispatch: # disabled
 
 permissions: {}
 
