@@ -48,13 +48,12 @@ cd my-project
 
 ### 2. Configure environment variables
 
-Copy the example env file and update it with your values:
+This repository ships a `.env` file at the project root with safe defaults for
+local development. Open it and replace the placeholder secrets before deploying
+anywhere.
 
-```bash
-cp .env.example .env
-```
-
-At minimum, change the following before any deployment:
+At minimum, change the following — they ship as `changethis` and the backend
+will refuse to start in `staging`/`production` until they are changed:
 
 | Variable | Description |
 |---|---|
@@ -67,6 +66,19 @@ Generate secure random values with:
 ```bash
 python -c "import secrets; print(secrets.token_urlsafe(32))"
 ```
+
+#### Keeping secrets out of version control
+
+The `.env` file is tracked in this template so the stack works out of the box.
+**In your own project**, once you put real secrets in it, stop tracking it so you
+don't commit them:
+
+```bash
+git rm --cached .env
+echo ".env" >> .gitignore
+```
+
+See [development.md](./development.md) for more on the `.env` workflow.
 
 ### 3. Start the development stack
 
