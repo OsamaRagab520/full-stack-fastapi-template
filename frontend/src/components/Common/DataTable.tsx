@@ -3,6 +3,8 @@ import {
   flexRender,
   getCoreRowModel,
   getPaginationRowModel,
+  type OnChangeFn,
+  type PaginationState,
   useReactTable,
 } from "@tanstack/react-table"
 import {
@@ -32,18 +34,36 @@ import {
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
+  // Provide all three together to paginate server-side. `data` is then the
+  // current page only, and `rowCount` is the total across all pages.
+  rowCount?: number
+  pagination?: PaginationState
+  onPaginationChange?: OnChangeFn<PaginationState>
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
+  rowCount,
+  pagination,
+  onPaginationChange,
 }: DataTableProps<TData, TValue>) {
+  const manualPagination = pagination !== undefined
+
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
+    getPaginationRowModel: manualPagination
+      ? undefined
+      : getPaginationRowModel(),
+    manualPagination,
+    rowCount: manualPagination ? rowCount : undefined,
+    state: manualPagination ? { pagination } : undefined,
+    onPaginationChange: manualPagination ? onPaginationChange : undefined,
   })
+
+  const totalRows = table.getRowCount()
 
   return (
     <div className="flex flex-col gap-4">
@@ -102,10 +122,10 @@ export function DataTable<TData, TValue>({
               {Math.min(
                 (table.getState().pagination.pageIndex + 1) *
                   table.getState().pagination.pageSize,
-                data.length,
+                totalRows,
               )}{" "}
               of{" "}
-              <span className="font-medium text-foreground">{data.length}</span>{" "}
+              <span className="font-medium text-foreground">{totalRows}</span>{" "}
               entries
             </div>
             <div className="flex items-center gap-x-2">

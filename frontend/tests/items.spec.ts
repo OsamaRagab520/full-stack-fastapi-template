@@ -130,3 +130,31 @@ test.describe("Items empty state", () => {
     await expect(page.getByText("Add a new item to get started")).toBeVisible()
   })
 })
+
+test("Items list paginates server-side across pages", async ({ page }) => {
+  test.slow() // creating 11 items via the UI takes a while
+
+  const email = randomEmail()
+  const password = randomPassword()
+  await createUser({ email, password })
+  await logInUser(page, email, password)
+  await page.goto("/items")
+
+  const titles: string[] = []
+  for (let i = 0; i < 11; i++) {
+    const title = randomItemTitle()
+    titles.push(title)
+    await page.getByRole("button", { name: "Add Item" }).click()
+    await page.getByLabel("Title").fill(title)
+    await page.getByRole("button", { name: "Save" }).click()
+    await expect(page.getByText("Item created successfully")).toBeVisible()
+  }
+
+  // Items are ordered newest-first, so the first item created is the oldest
+  // and sits on page 2 (rows 11+). Default page size is 10.
+  const oldest = titles[0]
+  await expect(page.getByRole("cell", { name: oldest })).toBeHidden()
+
+  await page.getByRole("button", { name: "Go to next page" }).click()
+  await expect(page.getByRole("cell", { name: oldest })).toBeVisible()
+})
