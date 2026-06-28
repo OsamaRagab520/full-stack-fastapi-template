@@ -1,5 +1,4 @@
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { Plus } from "lucide-react"
 import { useState } from "react"
 import { useForm } from "react-hook-form"
@@ -28,8 +27,7 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { LoadingButton } from "@/components/ui/loading-button"
-import useCustomToast from "@/hooks/useCustomToast"
-import { handleError } from "@/utils"
+import { useEntityMutation } from "@/hooks/useEntityMutation"
 
 const formSchema = z
   .object({
@@ -54,8 +52,6 @@ type FormData = z.infer<typeof formSchema>
 
 const AddUser = () => {
   const [isOpen, setIsOpen] = useState(false)
-  const queryClient = useQueryClient()
-  const { showSuccessToast, showErrorToast } = useCustomToast()
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -71,17 +67,14 @@ const AddUser = () => {
     },
   })
 
-  const mutation = useMutation({
+  const mutation = useEntityMutation({
     mutationFn: (data: UserCreate) =>
       UsersService.createUser({ requestBody: data }),
+    successMessage: "User created successfully",
+    invalidate: ["users"],
     onSuccess: () => {
-      showSuccessToast("User created successfully")
       form.reset()
       setIsOpen(false)
-    },
-    onError: handleError.bind(showErrorToast),
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["users"] })
     },
   })
 

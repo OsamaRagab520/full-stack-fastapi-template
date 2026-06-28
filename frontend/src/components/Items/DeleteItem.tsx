@@ -1,4 +1,3 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { Trash2 } from "lucide-react"
 import { useState } from "react"
 import { useForm } from "react-hook-form"
@@ -16,8 +15,7 @@ import {
 } from "@/components/ui/dialog"
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu"
 import { LoadingButton } from "@/components/ui/loading-button"
-import useCustomToast from "@/hooks/useCustomToast"
-import { handleError } from "@/utils"
+import { useEntityMutation } from "@/hooks/useEntityMutation"
 
 interface DeleteItemProps {
   id: string
@@ -26,24 +24,15 @@ interface DeleteItemProps {
 
 const DeleteItem = ({ id, onSuccess }: DeleteItemProps) => {
   const [isOpen, setIsOpen] = useState(false)
-  const queryClient = useQueryClient()
-  const { showSuccessToast, showErrorToast } = useCustomToast()
   const { handleSubmit } = useForm()
 
-  const deleteItem = async (id: string) => {
-    await ItemsService.deleteItem({ id: id })
-  }
-
-  const mutation = useMutation({
-    mutationFn: deleteItem,
+  const mutation = useEntityMutation({
+    mutationFn: (id: string) => ItemsService.deleteItem({ id: id }),
+    successMessage: "The item was deleted successfully",
+    invalidate: "all",
     onSuccess: () => {
-      showSuccessToast("The item was deleted successfully")
       setIsOpen(false)
       onSuccess()
-    },
-    onError: handleError.bind(showErrorToast),
-    onSettled: () => {
-      queryClient.invalidateQueries()
     },
   })
 
