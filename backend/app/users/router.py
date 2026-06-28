@@ -3,14 +3,20 @@ from typing import Any
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
 
-from app.auth.dependencies import CurrentUser, SessionDep, get_current_active_superuser
-from app.core.security import verify_password
+from app.auth.dependencies import CurrentUser, get_current_active_superuser
+from app.core.db import SessionDep
 from app.emails.config import email_settings
 from app.emails.service import generate_new_account_email, send_email
 from app.models import Message
 from app.users import selectors as users_selectors
 from app.users import service as users_service
-from app.users.exceptions import EmailAlreadyInUseError, EmailAlreadyRegisteredError
+from app.users.exceptions import (
+    CannotDeleteSelfError,
+    CurrentPasswordIncorrectError,
+    EmailAlreadyInUseError,
+    EmailAlreadyRegisteredError,
+    PasswordUnchangedError,
+)
 from app.users.schemas import (
     UpdatePassword,
     UserCreate,
@@ -116,19 +122,22 @@ async def update_password_me(
     """
     Update own password.
     """
-    verified, _ = verify_password(body.current_password, current_user.hashed_password)
-    if not verified:
+    try:
+        await users_service.change_password(
+            session=session,
+            user=current_user,
+            current_password=body.current_password,
+            new_password=body.new_password,
+        )
+    except CurrentPasswordIncorrectError:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Incorrect password"
         )
-    if body.current_password == body.new_password:
+    except PasswordUnchangedError:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="New password cannot be the same as the current one",
         )
-    await users_service.update_user(
-        session=session, db_user=current_user, user_in=UserUpdate(password=body.new_password)
-    )
     return Message(message="Password updated successfully")
 
 
@@ -151,12 +160,13 @@ async def delete_user_me(session: SessionDep, current_user: CurrentUser) -> Any:
     """
     Delete own user.
     """
-    if current_user.is_superuser:
+    try:
+        await users_service.delete_own_account(session=session, user=current_user)
+    except CannotDeleteSelfError:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Super users are not allowed to delete themselves",
         )
-    await users_service.delete_user(session=session, db_user=current_user)
     return Message(message="User deleted successfully")
 
 
@@ -197,17 +207,19 @@ async def read_user_by_id(
     """
     Get a specific user by id.
     """
-    user = await users_selectors.get_user(session=session, user_id=user_id)
-    if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
-        )
-    if user == current_user:
-        return user
+    if user_id == current_user.id:
+        return current_user
+    # Check privileges before existence so a non-superuser cannot use this
+    # endpoint as an oracle for which user ids exist.
     if not current_user.is_superuser:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="The user doesn't have enough privileges",
+        )
+    user = await users_selectors.get_user(session=session, user_id=user_id)
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
         )
     return user
 
@@ -267,10 +279,13 @@ async def delete_user(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
         )
-    if user == current_user:
+    try:
+        await users_service.delete_user(
+            session=session, db_user=user, acting_user=current_user
+        )
+    except CannotDeleteSelfError:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Super users are not allowed to delete themselves",
         )
-    await users_service.delete_user(session=session, db_user=user)
     return Message(message="User deleted successfully")

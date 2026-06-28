@@ -8,11 +8,12 @@ import {
   type UserRegister,
   UsersService,
 } from "@/client"
+import { tokenStore } from "@/lib/tokenStore"
 import { handleError } from "@/utils"
 import useCustomToast from "./useCustomToast"
 
 const isLoggedIn = () => {
-  return localStorage.getItem("access_token") !== null
+  return tokenStore.isAuthenticated()
 }
 
 const useAuth = () => {
@@ -42,7 +43,7 @@ const useAuth = () => {
     const response = await LoginService.loginAccessToken({
       formData: data,
     })
-    localStorage.setItem("access_token", response.access_token)
+    tokenStore.set(response.access_token)
   }
 
   const loginMutation = useMutation({
@@ -54,7 +55,7 @@ const useAuth = () => {
   })
 
   const logout = () => {
-    localStorage.removeItem("access_token")
+    tokenStore.clear()
     navigate({ to: "/login" })
   }
 

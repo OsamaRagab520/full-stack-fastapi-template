@@ -4,7 +4,7 @@ from fastapi import APIRouter, status
 from pydantic import BaseModel, EmailStr
 from sqlmodel import Field
 
-from app.auth.dependencies import SessionDep
+from app.core.db import SessionDep
 from app.users import service as users_service
 from app.users.schemas import UserCreate, UserPublic
 

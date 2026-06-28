@@ -7,9 +7,8 @@ from sqlalchemy.pool import NullPool
 from sqlmodel import delete
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from app.auth.dependencies import get_db
 from app.core.config import settings
-from app.core.db import init_db
+from app.core.db import get_db, init_db
 from app.items.models import Item
 from app.main import app
 from app.users.models import User

@@ -1,24 +1,27 @@
 import uuid
-from typing import Any
+from typing import Any, NoReturn
 
 from fastapi import APIRouter, HTTPException, Query, status
 
-from app.auth.dependencies import CurrentUser, SessionDep
-from app.items import selectors as items_selectors
+from app.auth.dependencies import CurrentUser
+from app.core.db import SessionDep
 from app.items import service as items_service
-from app.items.models import Item
+from app.items.exceptions import ItemAccessDeniedError, ItemNotFoundError
 from app.items.schemas import ItemCreate, ItemPublic, ItemsPublic, ItemUpdate
 from app.models import Message
-from app.users.models import User
 
 router = APIRouter(prefix="/items", tags=["items"])
 
 
-def _assert_item_access(item: Item, user: User) -> None:
-    if not user.is_superuser and item.owner_id != user.id:
+def _raise_http(exc: ItemNotFoundError | ItemAccessDeniedError) -> NoReturn:
+    """Map item domain errors onto their HTTP responses (the only place we do)."""
+    if isinstance(exc, ItemNotFoundError):
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Not enough permissions"
+            status_code=status.HTTP_404_NOT_FOUND, detail="Item not found"
         )
+    raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN, detail="Not enough permissions"
+    )
 
 
 @router.get("/", response_model=ItemsPublic)
@@ -31,9 +34,8 @@ async def read_items(
     """
     Retrieve items.
     """
-    owner_id = None if current_user.is_superuser else current_user.id
-    items, count = await items_selectors.list_items(
-        session=session, owner_id=owner_id, skip=skip, limit=limit
+    items, count = await items_service.list_items_for_user(
+        session=session, acting_user=current_user, skip=skip, limit=limit
     )
     return {"data": items, "count": count}
 
@@ -52,13 +54,12 @@ async def read_item(
     """
     Get item by ID.
     """
-    item = await items_selectors.get_item(session=session, item_id=id)
-    if not item:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Item not found"
+    try:
+        return await items_service.get_item_for_user(
+            session=session, item_id=id, acting_user=current_user
         )
-    _assert_item_access(item, current_user)
-    return item
+    except (ItemNotFoundError, ItemAccessDeniedError) as exc:
+        _raise_http(exc)
 
 
 @router.post(
@@ -72,10 +73,9 @@ async def create_item(
     """
     Create new item.
     """
-    item = await items_service.create_item(
+    return await items_service.create_item(
         session=session, item_in=item_in, owner_id=current_user.id
     )
-    return item
 
 
 @router.patch(
@@ -96,13 +96,12 @@ async def update_item(
     """
     Update an item.
     """
-    item = await items_selectors.get_item(session=session, item_id=id)
-    if not item:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Item not found"
+    try:
+        return await items_service.update_item(
+            session=session, item_id=id, item_in=item_in, acting_user=current_user
         )
-    _assert_item_access(item, current_user)
-    return await items_service.update_item(session=session, db_item=item, item_in=item_in)
+    except (ItemNotFoundError, ItemAccessDeniedError) as exc:
+        _raise_http(exc)
 
 
 @router.delete(
@@ -118,11 +117,10 @@ async def delete_item(
     """
     Delete an item.
     """
-    item = await items_selectors.get_item(session=session, item_id=id)
-    if not item:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Item not found"
+    try:
+        await items_service.delete_item(
+            session=session, item_id=id, acting_user=current_user
         )
-    _assert_item_access(item, current_user)
-    await items_service.delete_item(session=session, db_item=item)
+    except (ItemNotFoundError, ItemAccessDeniedError) as exc:
+        _raise_http(exc)
     return Message(message="Item deleted successfully")
