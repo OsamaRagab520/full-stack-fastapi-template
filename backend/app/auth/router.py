@@ -12,6 +12,7 @@ from app.auth.tokens import generate_password_reset_token, verify_password_reset
 from app.core import security
 from app.emails.service import generate_reset_password_email, send_email
 from app.models import Message
+from app.users import selectors as users_selectors
 from app.users import service as users_service
 from app.users.schemas import UserPublic, UserUpdate
 
@@ -65,7 +66,7 @@ async def recover_password(
     """
     Password Recovery
     """
-    user = await users_service.get_user_by_email(session=session, email=email)
+    user = await users_selectors.get_user_by_email(session=session, email=email)
 
     if user:
         password_reset_token = generate_password_reset_token(email=email)
@@ -98,7 +99,7 @@ async def reset_password(session: SessionDep, body: NewPassword) -> Message:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid token"
         )
-    user = await users_service.get_user_by_email(session=session, email=email)
+    user = await users_selectors.get_user_by_email(session=session, email=email)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid token"
@@ -128,7 +129,7 @@ async def recover_password_html_content(email: str, session: SessionDep) -> Any:
     """
     HTML Content for Password Recovery
     """
-    user = await users_service.get_user_by_email(session=session, email=email)
+    user = await users_selectors.get_user_by_email(session=session, email=email)
 
     if not user:
         raise HTTPException(

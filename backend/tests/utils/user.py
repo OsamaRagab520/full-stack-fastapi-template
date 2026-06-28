@@ -2,6 +2,7 @@ from httpx import AsyncClient
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.core.config import settings
+from app.users import selectors as users_selectors
 from app.users import service as users_service
 from app.users.models import User
 from app.users.schemas import UserCreate, UserUpdate
@@ -37,7 +38,7 @@ async def authentication_token_from_email(
     If the user doesn't exist it is created first.
     """
     password = random_lower_string()
-    user = await users_service.get_user_by_email(session=db, email=email)
+    user = await users_selectors.get_user_by_email(session=db, email=email)
     if not user:
         user_in_create = UserCreate(email=email, password=password)
         user = await users_service.create_user(session=db, user_create=user_in_create)

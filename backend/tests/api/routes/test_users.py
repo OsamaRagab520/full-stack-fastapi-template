@@ -8,6 +8,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.core.config import settings
 from app.core.security import verify_password
+from app.users import selectors as users_selectors
 from app.users import service as users_service
 from app.users.models import User
 from app.users.schemas import UserCreate
@@ -62,7 +63,7 @@ async def test_create_user_new_email(
         )
         assert r.status_code == 201
         created_user = r.json()
-        user = await users_service.get_user_by_email(session=db, email=username)
+        user = await users_selectors.get_user_by_email(session=db, email=username)
         assert user
         assert user.email == created_user["email"]
 
@@ -81,7 +82,7 @@ async def test_get_existing_user_as_superuser(
     )
     assert 200 <= r.status_code < 300
     api_user = r.json()
-    existing_user = await users_service.get_user_by_email(session=db, email=username)
+    existing_user = await users_selectors.get_user_by_email(session=db, email=username)
     assert existing_user
     assert existing_user.email == api_user["email"]
 
@@ -123,7 +124,7 @@ async def test_get_existing_user_current_user(
     )
     assert 200 <= r.status_code < 300
     api_user = r.json()
-    existing_user = await users_service.get_user_by_email(session=db, email=username)
+    existing_user = await users_selectors.get_user_by_email(session=db, email=username)
     assert existing_user
     assert existing_user.email == api_user["email"]
 
@@ -514,7 +515,7 @@ async def test_delete_user_not_found(
 async def test_delete_user_current_super_user_error(
     client: AsyncClient, superuser_token_headers: dict[str, str], db: AsyncSession
 ) -> None:
-    super_user = await users_service.get_user_by_email(
+    super_user = await users_selectors.get_user_by_email(
         session=db, email=settings.FIRST_SUPERUSER
     )
     assert super_user

@@ -1,10 +1,10 @@
-from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.core.security import get_password_hash, verify_password
 from app.users.exceptions import EmailAlreadyInUseError, EmailAlreadyRegisteredError
 from app.users.models import User
 from app.users.schemas import UserCreate, UserUpdate, UserUpdateMe
+from app.users.selectors import get_user_by_email
 
 DUMMY_HASH = "$argon2id$v=19$m=65536,t=3,p=4$MjQyZWE1MzBjYjJlZTI0Yw$YTU4NGM5ZTZmYjE2NzZlZjY0ZWY3ZGRkY2U2OWFjNjk"
 
@@ -58,11 +58,6 @@ async def delete_user(*, session: AsyncSession, db_user: User) -> None:
     await session.commit()
 
 
-async def get_user_by_email(*, session: AsyncSession, email: str) -> User | None:
-    statement = select(User).where(User.email == email)
-    return (await session.exec(statement)).first()
-
-
 async def authenticate(*, session: AsyncSession, email: str, password: str) -> User | None:
     db_user = await get_user_by_email(session=session, email=email)
     if not db_user:
@@ -79,10 +74,3 @@ async def authenticate(*, session: AsyncSession, email: str, password: str) -> U
     return db_user
 
 
-async def update_user_password(
-    *, session: AsyncSession, db_user: User, new_password: str
-) -> None:
-    db_user.hashed_password = get_password_hash(new_password)
-    session.add(db_user)
-    await session.commit()
-    await session.refresh(db_user)

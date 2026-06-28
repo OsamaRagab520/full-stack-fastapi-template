@@ -2,9 +2,9 @@ import uuid
 from typing import Any
 
 from fastapi import APIRouter, HTTPException, Query, status
-from sqlmodel import col, func, select
 
 from app.auth.dependencies import CurrentUser, SessionDep
+from app.items import selectors as items_selectors
 from app.items import service as items_service
 from app.items.models import Item
 from app.items.schemas import ItemCreate, ItemPublic, ItemsPublic, ItemUpdate
@@ -31,18 +31,10 @@ async def read_items(
     """
     Retrieve items.
     """
-    where_clause = None if current_user.is_superuser else (Item.owner_id == current_user.id)
-
-    count_stmt = select(func.count()).select_from(Item)
-    item_stmt = select(Item).order_by(col(Item.created_at).desc()).offset(skip).limit(limit)
-
-    if where_clause is not None:
-        count_stmt = count_stmt.where(where_clause)
-        item_stmt = item_stmt.where(where_clause)
-
-    count = (await session.exec(count_stmt)).one()
-    items = (await session.exec(item_stmt)).all()
-
+    owner_id = None if current_user.is_superuser else current_user.id
+    items, count = await items_selectors.list_items(
+        session=session, owner_id=owner_id, skip=skip, limit=limit
+    )
     return {"data": items, "count": count}
 
 
@@ -60,7 +52,7 @@ async def read_item(
     """
     Get item by ID.
     """
-    item = await session.get(Item, id)
+    item = await items_selectors.get_item(session=session, item_id=id)
     if not item:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Item not found"
@@ -104,7 +96,7 @@ async def update_item(
     """
     Update an item.
     """
-    item = await session.get(Item, id)
+    item = await items_selectors.get_item(session=session, item_id=id)
     if not item:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Item not found"
@@ -126,7 +118,7 @@ async def delete_item(
     """
     Delete an item.
     """
-    item = await session.get(Item, id)
+    item = await items_selectors.get_item(session=session, item_id=id)
     if not item:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Item not found"

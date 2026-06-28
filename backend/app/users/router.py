@@ -2,16 +2,15 @@ import uuid
 from typing import Any
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
-from sqlmodel import col, func, select
 
 from app.auth.dependencies import CurrentUser, SessionDep, get_current_active_superuser
 from app.core.security import verify_password
 from app.emails.config import email_settings
 from app.emails.service import generate_new_account_email, send_email
 from app.models import Message
+from app.users import selectors as users_selectors
 from app.users import service as users_service
 from app.users.exceptions import EmailAlreadyInUseError, EmailAlreadyRegisteredError
-from app.users.models import User
 from app.users.schemas import (
     UpdatePassword,
     UserCreate,
@@ -38,12 +37,9 @@ async def read_users(
     """
     Retrieve users.
     """
-    count_statement = select(func.count()).select_from(User)
-    count = (await session.exec(count_statement)).one()
-
-    statement = select(User).order_by(col(User.created_at).desc()).offset(skip).limit(limit)
-    users = (await session.exec(statement)).all()
-
+    users, count = await users_selectors.list_users(
+        session=session, skip=skip, limit=limit
+    )
     return {"data": users, "count": count}
 
 
@@ -130,8 +126,8 @@ async def update_password_me(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="New password cannot be the same as the current one",
         )
-    await users_service.update_user_password(
-        session=session, db_user=current_user, new_password=body.new_password
+    await users_service.update_user(
+        session=session, db_user=current_user, user_in=UserUpdate(password=body.new_password)
     )
     return Message(message="Password updated successfully")
 
@@ -201,7 +197,7 @@ async def read_user_by_id(
     """
     Get a specific user by id.
     """
-    user = await session.get(User, user_id)
+    user = await users_selectors.get_user(session=session, user_id=user_id)
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
@@ -234,7 +230,7 @@ async def update_user(
     """
     Update a user.
     """
-    db_user = await session.get(User, user_id)
+    db_user = await users_selectors.get_user(session=session, user_id=user_id)
     if not db_user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -266,7 +262,7 @@ async def delete_user(
     """
     Delete a user.
     """
-    user = await session.get(User, user_id)
+    user = await users_selectors.get_user(session=session, user_id=user_id)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found"

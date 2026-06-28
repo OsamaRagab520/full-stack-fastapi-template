@@ -1,14 +1,11 @@
 import uuid
-from datetime import UTC, datetime
+from datetime import datetime
 
 from sqlalchemy import DateTime
 from sqlmodel import Field, Relationship, SQLModel
 
+from app.core.db import _utc_now
 from app.users.models import User
-
-
-def _utc_now() -> datetime:
-    return datetime.now(UTC)
 
 
 class ItemBase(SQLModel):

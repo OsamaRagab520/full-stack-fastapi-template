@@ -6,7 +6,9 @@ from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
-from app.models import SQLModel  # noqa: F401  — registers all table models
+from sqlmodel import SQLModel  # noqa: F401
+from app.items.models import Item  # noqa: F401  — registers all table models
+from app.users.models import User  # noqa: F401
 from app.core.config import settings  # noqa: F401
 
 config = context.config
