@@ -1,5 +1,6 @@
 import logging
 from dataclasses import dataclass
+from functools import cache
 from pathlib import Path
 from typing import Any
 
@@ -19,11 +20,16 @@ class EmailData:
     subject: str
 
 
-def render_email_template(*, template_name: str, context: dict[str, Any]) -> str:
+@cache
+def _load_email_template(template_name: str) -> Template:
     template_str = (
         Path(__file__).parent.parent / "email-templates" / "build" / template_name
     ).read_text()
-    return Template(template_str).render(context)
+    return Template(template_str)
+
+
+def render_email_template(*, template_name: str, context: dict[str, Any]) -> str:
+    return _load_email_template(template_name).render(context)
 
 
 def send_email(
@@ -80,9 +86,7 @@ def generate_reset_password_email(email_to: str, email: str, token: str) -> Emai
     return EmailData(html_content=html_content, subject=subject)
 
 
-def generate_new_account_email(
-    email_to: str, username: str
-) -> EmailData:
+def generate_new_account_email(email_to: str, username: str) -> EmailData:
     subject = f"{settings.PROJECT_NAME} - New account for user {username}"
     html_content = render_email_template(
         template_name="new_account.html",
