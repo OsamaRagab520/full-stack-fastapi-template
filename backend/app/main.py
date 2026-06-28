@@ -8,6 +8,7 @@ from starlette.middleware.cors import CORSMiddleware
 
 from app.api.main import api_router
 from app.core.config import settings
+from app.core.exceptions import HTTPDomainError, http_domain_exception_handler
 
 _SHOW_DOCS_ENVS = {"local", "staging"}
 
@@ -31,6 +32,10 @@ app = FastAPI(
     generate_unique_id_function=custom_generate_unique_id,
     lifespan=lifespan,
 )
+
+# Map every typed domain error to its fixed HTTP status + detail, so routes
+# never catch them or raise HTTPException for domain failures.
+app.add_exception_handler(HTTPDomainError, http_domain_exception_handler)
 
 # Set all CORS enabled origins
 if settings.all_cors_origins:

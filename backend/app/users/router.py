@@ -1,7 +1,7 @@
 import uuid
 from typing import Any
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
+from fastapi import APIRouter, BackgroundTasks, Depends, Query, status
 
 from app.auth.dependencies import CurrentUser, get_current_active_superuser
 from app.core.db import SessionDep
@@ -10,13 +10,6 @@ from app.emails.service import generate_new_account_email, send_email
 from app.models import Message
 from app.users import selectors as users_selectors
 from app.users import service as users_service
-from app.users.exceptions import (
-    CannotDeleteSelfError,
-    CurrentPasswordIncorrectError,
-    EmailAlreadyInUseError,
-    EmailAlreadyRegisteredError,
-    PasswordUnchangedError,
-)
 from app.users.schemas import (
     UpdatePassword,
     UserCreate,
@@ -64,13 +57,7 @@ async def create_user(
     """
     Create new user.
     """
-    try:
-        user = await users_service.create_user(session=session, user_create=user_in)
-    except EmailAlreadyRegisteredError:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="The user with this email already exists in the system.",
-        )
+    user = await users_service.create_user(session=session, user_create=user_in)
     if email_settings.emails_enabled and user_in.email:
         email_data = generate_new_account_email(
             email_to=user_in.email, username=user_in.email
@@ -97,23 +84,18 @@ async def update_user_me(
     """
     Update own user.
     """
-    try:
-        user = await users_service.update_user_me(
-            session=session, db_user=current_user, user_in=user_in
-        )
-    except EmailAlreadyInUseError:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="User with this email already exists",
-        )
-    return user
+    return await users_service.update_user_me(
+        session=session, db_user=current_user, user_in=user_in
+    )
 
 
 @router.patch(
     "/me/password",
     response_model=Message,
     responses={
-        status.HTTP_400_BAD_REQUEST: {"description": "Wrong current password or same password"},
+        status.HTTP_400_BAD_REQUEST: {
+            "description": "Wrong current password or same password"
+        },
     },
 )
 async def update_password_me(
@@ -122,22 +104,12 @@ async def update_password_me(
     """
     Update own password.
     """
-    try:
-        await users_service.change_password(
-            session=session,
-            user=current_user,
-            current_password=body.current_password,
-            new_password=body.new_password,
-        )
-    except CurrentPasswordIncorrectError:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Incorrect password"
-        )
-    except PasswordUnchangedError:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="New password cannot be the same as the current one",
-        )
+    await users_service.change_password(
+        session=session,
+        user=current_user,
+        current_password=body.current_password,
+        new_password=body.new_password,
+    )
     return Message(message="Password updated successfully")
 
 
@@ -153,20 +125,16 @@ async def read_user_me(current_user: CurrentUser) -> Any:
     "/me",
     response_model=Message,
     responses={
-        status.HTTP_403_FORBIDDEN: {"description": "Superusers cannot delete themselves"},
+        status.HTTP_403_FORBIDDEN: {
+            "description": "Superusers cannot delete themselves"
+        },
     },
 )
 async def delete_user_me(session: SessionDep, current_user: CurrentUser) -> Any:
     """
     Delete own user.
     """
-    try:
-        await users_service.delete_own_account(session=session, user=current_user)
-    except CannotDeleteSelfError:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Super users are not allowed to delete themselves",
-        )
+    await users_service.delete_own_account(session=session, user=current_user)
     return Message(message="User deleted successfully")
 
 
@@ -183,14 +151,7 @@ async def register_user(session: SessionDep, user_in: UserRegister) -> Any:
     Create new user without the need to be logged in.
     """
     user_create = UserCreate.model_validate(user_in)
-    try:
-        user = await users_service.create_user(session=session, user_create=user_create)
-    except EmailAlreadyRegisteredError:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="The user with this email already exists in the system",
-        )
-    return user
+    return await users_service.create_user(session=session, user_create=user_create)
 
 
 @router.get(
@@ -207,21 +168,9 @@ async def read_user_by_id(
     """
     Get a specific user by id.
     """
-    if user_id == current_user.id:
-        return current_user
-    # Check privileges before existence so a non-superuser cannot use this
-    # endpoint as an oracle for which user ids exist.
-    if not current_user.is_superuser:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="The user doesn't have enough privileges",
-        )
-    user = await users_selectors.get_user(session=session, user_id=user_id)
-    if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
-        )
-    return user
+    return await users_service.get_user_for_viewer(
+        session=session, user_id=user_id, acting_user=current_user
+    )
 
 
 @router.patch(
@@ -242,29 +191,19 @@ async def update_user(
     """
     Update a user.
     """
-    db_user = await users_selectors.get_user(session=session, user_id=user_id)
-    if not db_user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="The user with this id does not exist in the system",
-        )
-    try:
-        db_user = await users_service.update_user(
-            session=session, db_user=db_user, user_in=user_in
-        )
-    except EmailAlreadyInUseError:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="User with this email already exists",
-        )
-    return db_user
+    db_user = await users_service.get_user_or_raise(session=session, user_id=user_id)
+    return await users_service.update_user(
+        session=session, db_user=db_user, user_in=user_in
+    )
 
 
 @router.delete(
     "/{user_id}",
     dependencies=[Depends(get_current_active_superuser)],
     responses={
-        status.HTTP_403_FORBIDDEN: {"description": "Superusers cannot delete themselves"},
+        status.HTTP_403_FORBIDDEN: {
+            "description": "Superusers cannot delete themselves"
+        },
         status.HTTP_404_NOT_FOUND: {"description": "User not found"},
     },
 )
@@ -274,18 +213,8 @@ async def delete_user(
     """
     Delete a user.
     """
-    user = await users_selectors.get_user(session=session, user_id=user_id)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
-        )
-    try:
-        await users_service.delete_user(
-            session=session, db_user=user, acting_user=current_user
-        )
-    except CannotDeleteSelfError:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Super users are not allowed to delete themselves",
-        )
+    user = await users_service.get_user_or_raise(session=session, user_id=user_id)
+    await users_service.delete_user(
+        session=session, db_user=user, acting_user=current_user
+    )
     return Message(message="User deleted successfully")

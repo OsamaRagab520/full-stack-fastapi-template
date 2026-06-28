@@ -1,6 +1,11 @@
-class ItemNotFoundError(Exception):
-    pass
+from app.core.exceptions import HTTPDomainError
 
 
-class ItemAccessDeniedError(Exception):
-    pass
+class ItemNotFoundError(HTTPDomainError):
+    status_code = 404
+    detail = "Item not found"
+
+
+class ItemAccessDeniedError(HTTPDomainError):
+    status_code = 403
+    detail = "Not enough permissions"

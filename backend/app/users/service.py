@@ -9,12 +9,41 @@ from app.users.exceptions import (
     EmailAlreadyInUseError,
     EmailAlreadyRegisteredError,
     PasswordUnchangedError,
+    UserAccessDeniedError,
+    UserNotFoundError,
 )
 from app.users.models import User
 from app.users.schemas import UserCreate, UserUpdate, UserUpdateMe
-from app.users.selectors import get_user_by_email
+from app.users.selectors import get_user, get_user_by_email
 
 DUMMY_HASH = "$argon2id$v=19$m=65536,t=3,p=4$MjQyZWE1MzBjYjJlZTI0Yw$YTU4NGM5ZTZmYjE2NzZlZjY0ZWY3ZGRkY2U2OWFjNjk"
+
+
+async def get_user_or_raise(*, session: AsyncSession, user_id: uuid.UUID) -> User:
+    """Load a user by id, raising UserNotFoundError if it does not exist."""
+    user = await get_user(session=session, user_id=user_id)
+    if user is None:
+        raise UserNotFoundError
+    return user
+
+
+async def get_user_for_viewer(
+    *, session: AsyncSession, user_id: uuid.UUID, acting_user: User
+) -> User:
+    """Load a user for viewing on behalf of ``acting_user``.
+
+    Self-lookup always succeeds. For anyone else the actor must be a superuser;
+    privilege is checked before existence so the endpoint can't be used as an
+    existence oracle. Raises UserAccessDeniedError / UserNotFoundError.
+    """
+    if user_id == acting_user.id:
+        return acting_user
+    if not acting_user.is_superuser:
+        raise UserAccessDeniedError
+    user = await get_user(session=session, user_id=user_id)
+    if user is None:
+        raise UserNotFoundError
+    return user
 
 
 async def _ensure_email_available(
@@ -43,7 +72,9 @@ async def create_user(*, session: AsyncSession, user_create: UserCreate) -> User
     return db_obj
 
 
-async def update_user(*, session: AsyncSession, db_user: User, user_in: UserUpdate) -> User:
+async def update_user(
+    *, session: AsyncSession, db_user: User, user_in: UserUpdate
+) -> User:
     user_data = user_in.model_dump(exclude_unset=True)
     if user_data.get("email"):
         await _ensure_email_available(
@@ -106,7 +137,9 @@ async def delete_own_account(*, session: AsyncSession, user: User) -> None:
     await session.commit()
 
 
-async def authenticate(*, session: AsyncSession, email: str, password: str) -> User | None:
+async def authenticate(
+    *, session: AsyncSession, email: str, password: str
+) -> User | None:
     db_user = await get_user_by_email(session=session, email=email)
     if not db_user:
         verify_password(password, DUMMY_HASH)

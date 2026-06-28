@@ -1,20 +1,22 @@
 from datetime import timedelta
 from typing import Annotated, Any
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, Depends, status
 from fastapi.responses import HTMLResponse
 from fastapi.security import OAuth2PasswordRequestForm
 
+from app.auth import service as auth_service
 from app.auth.config import auth_settings
 from app.auth.dependencies import CurrentUser, get_current_active_superuser
 from app.auth.schemas import NewPassword, Token
-from app.auth.tokens import generate_password_reset_token, verify_password_reset_token
+from app.auth.tokens import generate_password_reset_token
 from app.core import security
 from app.core.db import SessionDep
 from app.emails.service import generate_reset_password_email, send_email
 from app.models import Message
 from app.users import selectors as users_selectors
 from app.users import service as users_service
+from app.users.exceptions import UserNotFoundError
 from app.users.schemas import UserPublic, UserUpdate
 
 router = APIRouter(tags=["login"])
@@ -23,7 +25,9 @@ router = APIRouter(tags=["login"])
 @router.post(
     "/login/access-token",
     responses={
-        status.HTTP_400_BAD_REQUEST: {"description": "Incorrect credentials or inactive user"},
+        status.HTTP_400_BAD_REQUEST: {
+            "description": "Incorrect credentials or inactive user"
+        },
     },
 )
 async def login_access_token(
@@ -32,18 +36,9 @@ async def login_access_token(
     """
     OAuth2 compatible token login, get an access token for future requests
     """
-    user = await users_service.authenticate(
+    user = await auth_service.login(
         session=session, email=form_data.username, password=form_data.password
     )
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Incorrect email or password",
-        )
-    elif not user.is_active:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Inactive user"
-        )
     access_token_expires = timedelta(minutes=auth_settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     return Token(
         access_token=security.create_access_token(
@@ -95,25 +90,13 @@ async def reset_password(session: SessionDep, body: NewPassword) -> Message:
     """
     Reset password
     """
-    email = verify_password_reset_token(token=body.token)
-    if not email:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid token"
-        )
-    user = await users_selectors.get_user_by_email(session=session, email=email)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid token"
-        )
-    elif not user.is_active:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Inactive user"
-        )
-    user_in_update = UserUpdate(password=body.new_password)
+    user = await auth_service.resolve_reset_password_user(
+        session=session, token=body.token
+    )
     await users_service.update_user(
         session=session,
         db_user=user,
-        user_in=user_in_update,
+        user_in=UserUpdate(password=body.new_password),
     )
     return Message(message="Password updated successfully")
 
@@ -131,12 +114,8 @@ async def recover_password_html_content(email: str, session: SessionDep) -> Any:
     HTML Content for Password Recovery
     """
     user = await users_selectors.get_user_by_email(session=session, email=email)
-
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="The user with this username does not exist in the system.",
-        )
+    if user is None:
+        raise UserNotFoundError
     password_reset_token = generate_password_reset_token(email=email)
     email_data = generate_reset_password_email(
         email_to=user.email, email=email, token=password_reset_token

@@ -1,30 +1,21 @@
 import uuid
-from typing import Any, NoReturn
+from typing import Any
 
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, Query, status
 
 from app.auth.dependencies import CurrentUser
 from app.core.db import SessionDep
 from app.items import service as items_service
-from app.items.exceptions import ItemAccessDeniedError, ItemNotFoundError
 from app.items.schemas import ItemCreate, ItemPublic, ItemsPublic, ItemUpdate
 from app.models import Message
 
 router = APIRouter(prefix="/items", tags=["items"])
 
 
-def _raise_http(exc: ItemNotFoundError | ItemAccessDeniedError) -> NoReturn:
-    """Map item domain errors onto their HTTP responses (the only place we do)."""
-    if isinstance(exc, ItemNotFoundError):
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Item not found"
-        )
-    raise HTTPException(
-        status_code=status.HTTP_403_FORBIDDEN, detail="Not enough permissions"
-    )
-
-
-@router.get("/", response_model=ItemsPublic)
+@router.get(
+    "/",
+    response_model=ItemsPublic,
+)
 async def read_items(
     session: SessionDep,
     current_user: CurrentUser,
@@ -54,12 +45,9 @@ async def read_item(
     """
     Get item by ID.
     """
-    try:
-        return await items_service.get_item_for_user(
-            session=session, item_id=id, acting_user=current_user
-        )
-    except (ItemNotFoundError, ItemAccessDeniedError) as exc:
-        _raise_http(exc)
+    return await items_service.get_item_for_user(
+        session=session, item_id=id, acting_user=current_user
+    )
 
 
 @router.post(
@@ -96,12 +84,9 @@ async def update_item(
     """
     Update an item.
     """
-    try:
-        return await items_service.update_item(
-            session=session, item_id=id, item_in=item_in, acting_user=current_user
-        )
-    except (ItemNotFoundError, ItemAccessDeniedError) as exc:
-        _raise_http(exc)
+    return await items_service.update_item(
+        session=session, item_id=id, item_in=item_in, acting_user=current_user
+    )
 
 
 @router.delete(
@@ -117,10 +102,7 @@ async def delete_item(
     """
     Delete an item.
     """
-    try:
-        await items_service.delete_item(
-            session=session, item_id=id, acting_user=current_user
-        )
-    except (ItemNotFoundError, ItemAccessDeniedError) as exc:
-        _raise_http(exc)
+    await items_service.delete_item(
+        session=session, item_id=id, acting_user=current_user
+    )
     return Message(message="Item deleted successfully")

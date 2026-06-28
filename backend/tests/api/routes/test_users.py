@@ -51,7 +51,9 @@ async def test_create_user_new_email(
         patch("app.users.router.send_email", return_value=None),
         patch("app.emails.config.email_settings.SMTP_HOST", "smtp.example.com"),
         patch("app.emails.config.email_settings.SMTP_USER", "admin@example.com"),
-        patch("app.emails.config.email_settings.EMAILS_FROM_EMAIL", "admin@example.com"),
+        patch(
+            "app.emails.config.email_settings.EMAILS_FROM_EMAIL", "admin@example.com"
+        ),
     ):
         username = random_email()
         password = random_lower_string()
@@ -111,9 +113,7 @@ async def test_get_existing_user_current_user(
         "username": username,
         "password": password,
     }
-    r = await client.post(
-        f"{settings.API_V1_STR}/login/access-token", data=login_data
-    )
+    r = await client.post(f"{settings.API_V1_STR}/login/access-token", data=login_data)
     tokens = r.json()
     a_token = tokens["access_token"]
     headers = {"Authorization": f"Bearer {a_token}"}
@@ -407,7 +407,7 @@ async def test_update_user_not_exists(
         json=data,
     )
     assert r.status_code == 404
-    assert r.json()["detail"] == "The user with this id does not exist in the system"
+    assert r.json()["detail"] == "User not found"
 
 
 async def test_update_user_email_exists(
@@ -444,9 +444,7 @@ async def test_delete_user_me(client: AsyncClient, db: AsyncSession) -> None:
         "username": username,
         "password": password,
     }
-    r = await client.post(
-        f"{settings.API_V1_STR}/login/access-token", data=login_data
-    )
+    r = await client.post(f"{settings.API_V1_STR}/login/access-token", data=login_data)
     tokens = r.json()
     a_token = tokens["access_token"]
     headers = {"Authorization": f"Bearer {a_token}"}
