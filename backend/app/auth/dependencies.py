@@ -6,7 +6,7 @@ from jwt.exceptions import InvalidTokenError
 from pydantic import ValidationError
 
 from app.auth.schemas import TokenPayload
-from app.core import security
+from app.auth.tokens import decode_token
 from app.core.config import settings
 from app.core.db import SessionDep
 from app.users.models import User
@@ -20,7 +20,7 @@ TokenDep = Annotated[str, Depends(reusable_oauth2)]
 
 async def get_current_user(session: SessionDep, token: TokenDep) -> User:
     try:
-        payload = security.decode_token(token)
+        payload = decode_token(token)
         token_data = TokenPayload(**payload)
     except (InvalidTokenError, ValidationError):
         raise HTTPException(

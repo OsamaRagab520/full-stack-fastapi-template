@@ -4,7 +4,7 @@ from datetime import datetime
 from sqlalchemy import DateTime
 from sqlmodel import Field, Relationship, SQLModel
 
-from app.core.db import _utc_now
+from app.core.time import utc_now
 from app.users.models import User
 
 
@@ -16,7 +16,7 @@ class ItemBase(SQLModel):
 class Item(ItemBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     created_at: datetime | None = Field(
-        default_factory=_utc_now,
+        default_factory=utc_now,
         sa_type=DateTime(timezone=True),  # type: ignore
     )
     owner_id: uuid.UUID = Field(

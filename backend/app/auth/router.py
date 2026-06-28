@@ -9,8 +9,7 @@ from app.auth import service as auth_service
 from app.auth.config import auth_settings
 from app.auth.dependencies import CurrentUser, get_current_active_superuser
 from app.auth.schemas import NewPassword, Token
-from app.auth.tokens import generate_password_reset_token
-from app.core import security
+from app.auth.tokens import create_access_token, generate_password_reset_token
 from app.core.db import SessionDep
 from app.emails.service import generate_reset_password_email, send_email
 from app.models import Message
@@ -41,9 +40,7 @@ async def login_access_token(
     )
     access_token_expires = timedelta(minutes=auth_settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     return Token(
-        access_token=security.create_access_token(
-            user.id, expires_delta=access_token_expires
-        )
+        access_token=create_access_token(user.id, expires_delta=access_token_expires)
     )
 
 

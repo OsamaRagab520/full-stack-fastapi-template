@@ -3,7 +3,7 @@ from fastapi.encoders import jsonable_encoder
 from pwdlib.hashers.bcrypt import BcryptHasher
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from app.core.security import verify_password
+from app.core.passwords import verify_password
 from app.users import service as users_service
 from app.users.models import User
 from app.users.schemas import UserCreate, UserUpdate

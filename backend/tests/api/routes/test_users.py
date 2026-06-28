@@ -7,7 +7,7 @@ from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.core.config import settings
-from app.core.security import verify_password
+from app.core.passwords import verify_password
 from app.users import selectors as users_selectors
 from app.users import service as users_service
 from app.users.models import User

@@ -1,5 +1,4 @@
 from collections.abc import AsyncGenerator
-from datetime import UTC, datetime
 from typing import Annotated
 
 from fastapi import Depends
@@ -7,10 +6,6 @@ from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.core.config import settings
-
-
-def _utc_now() -> datetime:
-    return datetime.now(UTC)
 
 async_engine = create_async_engine(str(settings.SQLALCHEMY_DATABASE_URI), pool_pre_ping=True)
 AsyncSessionFactory = async_sessionmaker(async_engine, class_=AsyncSession, expire_on_commit=False)

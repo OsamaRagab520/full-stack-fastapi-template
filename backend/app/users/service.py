@@ -2,7 +2,7 @@ import uuid
 
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from app.core.security import get_password_hash, verify_password
+from app.core.passwords import get_password_hash, verify_password
 from app.users.exceptions import (
     CannotDeleteSelfError,
     CurrentPasswordIncorrectError,
