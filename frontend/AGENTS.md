@@ -21,9 +21,10 @@ contract — those live in `../backend/AGENTS.md`.
   `{tag}-{route_name}` id function — import them from `@/client`.
 - **`src/routeTree.gen.ts` is generated** by the TanStack Router plugin from the
   files in `src/routes/`. Don't hand-edit it; add/rename route files instead.
-- **Auth lives in `useAuth.ts`.** JWT is stored in `localStorage` under
-  `access_token`; the current user is fetched via TanStack Query on the
-  `["currentUser"]` query key. Read auth through this hook, not `localStorage`.
+- **Auth lives in `useAuth.ts`.** JWT persistence is abstracted by
+  `src/lib/tokenStore.ts` (get/set/clear/isAuthenticated); the current user is
+  fetched via TanStack Query on the `["currentUser"]` query key. Read/write the
+  token only through `tokenStore` or `useAuth` — never raw `localStorage`.
 - **Data flows through TanStack Query.** Server state = queries/mutations keyed
   consistently; don't fetch with bare `fetch`/`axios` outside the client layer.
 
@@ -37,7 +38,7 @@ contract — those live in `../backend/AGENTS.md`.
 
 ## Anti-patterns
 - Don't edit generated files (`src/client/**`, `src/routeTree.gen.ts`).
-- Don't read/write the raw JWT outside `useAuth`.
+- Don't read/write the raw JWT outside `tokenStore`/`useAuth`.
 - Don't duplicate request/response types by hand — use the generated types.
 - Don't bypass TanStack Query to manage server state in component state.
 

@@ -17,16 +17,17 @@ contract that generates that client.
 ## Domain layout
 Each domain package follows the same shape:
 `models.py` (SQLModel table) · `schemas.py` (Pydantic I/O) · `selectors.py` (reads)
-· `service.py` (writes/mutations) · `router.py` (endpoints). Domains: `auth/` (also
-`config.py`, `dependencies.py`, `tokens.py`), `users/`, `items/`, `emails/`
-(`config.py`, `service.py`). Shared infra in `core/` (`config.py`, `db.py`,
-`security.py`).
+· `service.py` (writes/mutations) · `exceptions.py` (typed domain errors) · `router.py`
+(endpoints). Domains: `auth/` (also `config.py`, `dependencies.py`, `tokens.py`),
+`users/`, `items/`, `emails/` (`config.py`, `service.py`). Shared infra in `core/`
+(`config.py`, `db.py`, `security.py`).
 
 **Read/write split:** `selectors.py` owns all data fetching (queries, filters,
 counts, `session.get`) and returns models / `(rows, count)` tuples — never raises
-HTTP errors. `service.py` owns mutations and business rules, raising typed domain
-exceptions. The router decides authorization, calls a selector or service, and
-maps domain exceptions to HTTP responses. Routers never touch the ORM directly.
+HTTP errors. `service.py` owns mutations and business rules, raising typed exceptions
+from `exceptions.py` (e.g. `ItemNotFoundError`, `EmailAlreadyRegisteredError`) — never
+`HTTPException`. The router catches those typed exceptions and maps them to HTTP
+responses. Routers never touch the ORM directly.
 
 ## Contracts & Invariants
 - **Async everywhere.** Every route and service fn is `async`. The session is
@@ -47,11 +48,14 @@ maps domain exceptions to HTTP responses. Routers never touch the ORM directly.
 ## Patterns
 Add an endpoint to an existing domain:
 1. I/O models → that domain's `schemas.py`.
-2. Read logic → that domain's `selectors.py`; write logic → `service.py` (async).
-3. Route → that domain's `router.py`, depending on `SessionDep`/`CurrentUser`.
+2. Read logic → that domain's `selectors.py`; write logic → `service.py` (async);
+   new failure cases → `exceptions.py`.
+3. Route → that domain's `router.py`, depending on `SessionDep`/`CurrentUser`;
+   catch typed exceptions and map to `HTTPException`.
 4. After any schema/route change, regenerate the frontend client (root invariant).
 
-Add a new domain: create `app/<name>/` with the four-file shape, then
+Add a new domain: create `app/<name>/` with the five-file shape (`models`,
+`schemas`, `selectors`, `service`, `exceptions`, `router`), then
 `include_router` it in `app/api/main.py`.
 
 Schema/DB change: `alembic revision --autogenerate -m "..."` → review →
