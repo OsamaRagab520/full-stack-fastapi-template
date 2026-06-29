@@ -9,9 +9,16 @@ from jinja2 import Template
 
 from app.auth.config import auth_settings
 from app.core.config import settings
+from app.core.i18n import _, current_locale, translate
 from app.emails.config import email_settings
 
 logger = logging.getLogger(__name__)
+
+
+def _t(message: str, locale: str | None, **params: Any) -> str:
+    """Translate ``message`` for ``locale`` and interpolate ``params``."""
+    resolved = locale or current_locale.get()
+    return translate(message, resolved).format(**params)
 
 
 @dataclass
@@ -61,40 +68,87 @@ def send_email(
     logger.info(f"send email result: {response}")
 
 
-def generate_test_email(email_to: str) -> EmailData:
-    subject = f"{settings.PROJECT_NAME} - Test email"
+def generate_test_email(email_to: str, locale: str | None = None) -> EmailData:
+    subject = _t(
+        _("{project_name} - Test email"), locale, project_name=settings.PROJECT_NAME
+    )
+    t = {"line": _t(_("Test email for: {email}"), locale, email=email_to)}
     html_content = render_email_template(
         template_name="test_email.html",
-        context={"project_name": settings.PROJECT_NAME, "email": email_to},
+        context={"project_name": settings.PROJECT_NAME, "t": t},
     )
     return EmailData(html_content=html_content, subject=subject)
 
 
-def generate_reset_password_email(email_to: str, email: str, token: str) -> EmailData:
-    subject = f"{settings.PROJECT_NAME} - Password recovery for user {email}"
+def generate_reset_password_email(
+    email: str, token: str, locale: str | None = None
+) -> EmailData:
+    subject = _t(
+        _("{project_name} - Password recovery for user {email}"),
+        locale,
+        project_name=settings.PROJECT_NAME,
+        email=email,
+    )
     link = f"{settings.FRONTEND_HOST}/reset-password?token={token}"
+    valid_hours = auth_settings.EMAIL_RESET_TOKEN_EXPIRE_HOURS
+    t = {
+        "heading": _t(
+            _("{project_name} - Password Recovery"),
+            locale,
+            project_name=settings.PROJECT_NAME,
+        ),
+        "greeting": _t(_("Hello {username}"), locale, username=email),
+        "body_intro": _t(
+            _(
+                "We've received a request to reset your password. You can do it "
+                "by clicking the button below:"
+            ),
+            locale,
+        ),
+        "cta": _t(_("Reset password"), locale),
+        "or_copy": _t(
+            _("Or copy and paste the following link into your browser:"), locale
+        ),
+        "expires": _t(
+            _("This password will expire in {valid_hours} hours."),
+            locale,
+            valid_hours=valid_hours,
+        ),
+        "disclaimer": _t(
+            _(
+                "If you didn't request a password recovery you can disregard "
+                "this email."
+            ),
+            locale,
+        ),
+    }
     html_content = render_email_template(
         template_name="reset_password.html",
-        context={
-            "project_name": settings.PROJECT_NAME,
-            "username": email,
-            "email": email_to,
-            "valid_hours": auth_settings.EMAIL_RESET_TOKEN_EXPIRE_HOURS,
-            "link": link,
-        },
+        context={"link": link, "t": t},
     )
     return EmailData(html_content=html_content, subject=subject)
 
 
-def generate_new_account_email(email_to: str, username: str) -> EmailData:
-    subject = f"{settings.PROJECT_NAME} - New account for user {username}"
+def generate_new_account_email(username: str, locale: str | None = None) -> EmailData:
+    subject = _t(
+        _("{project_name} - New account for user {username}"),
+        locale,
+        project_name=settings.PROJECT_NAME,
+        username=username,
+    )
+    t = {
+        "heading": _t(
+            _("{project_name} - New Account"),
+            locale,
+            project_name=settings.PROJECT_NAME,
+        ),
+        "welcome": _t(_("Welcome to your new account!"), locale),
+        "details": _t(_("Here are your account details:"), locale),
+        "username": _t(_("Username: {username}"), locale, username=username),
+        "cta": _t(_("Go to Dashboard"), locale),
+    }
     html_content = render_email_template(
         template_name="new_account.html",
-        context={
-            "project_name": settings.PROJECT_NAME,
-            "username": username,
-            "email": email_to,
-            "link": settings.FRONTEND_HOST,
-        },
+        context={"link": settings.FRONTEND_HOST, "t": t},
     )
     return EmailData(html_content=html_content, subject=subject)

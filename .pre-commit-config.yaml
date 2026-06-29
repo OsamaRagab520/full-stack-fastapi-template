@@ -63,6 +63,14 @@ repos:
         language: unsupported
         pass_filenames: false
 
+      - id: compile-gettext-catalogs
+        name: compile gettext catalogs
+        entry: uv run pybabel compile -d backend/app/locales
+        language: unsupported
+        files: ^backend/app/locales/.*\.po$
+        pass_filenames: false
+        require_serial: true
+
       - id: generate-frontend-sdk
         name: Generate Frontend SDK
         entry: bash ./scripts/generate-client.sh

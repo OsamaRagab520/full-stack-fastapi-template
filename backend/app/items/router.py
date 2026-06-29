@@ -5,6 +5,7 @@ from fastapi import APIRouter, Query, status
 
 from app.auth.dependencies import CurrentUser
 from app.core.db import SessionDep
+from app.core.i18n import _, translate
 from app.items import service as items_service
 from app.items.schemas import ItemCreate, ItemPublic, ItemsPublic, ItemUpdate
 from app.models import Message
@@ -105,4 +106,4 @@ async def delete_item(
     await items_service.delete_item(
         session=session, item_id=id, acting_user=current_user
     )
-    return Message(message="Item deleted successfully")
+    return Message(message=translate(_("Item deleted successfully")))

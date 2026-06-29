@@ -11,6 +11,7 @@ from app.auth.dependencies import CurrentUser, get_current_active_superuser
 from app.auth.schemas import NewPassword, Token
 from app.auth.tokens import create_access_token, generate_password_reset_token
 from app.core.db import SessionDep
+from app.core.i18n import _, translate
 from app.emails.service import generate_reset_password_email, send_email
 from app.models import Message
 from app.users import selectors as users_selectors
@@ -64,7 +65,7 @@ async def recover_password(
     if user:
         password_reset_token = generate_password_reset_token(email=email)
         email_data = generate_reset_password_email(
-            email_to=user.email, email=email, token=password_reset_token
+            email=email, token=password_reset_token, locale=user.locale
         )
         bg.add_task(
             send_email,
@@ -73,7 +74,9 @@ async def recover_password(
             html_content=email_data.html_content,
         )
     return Message(
-        message="If that email is registered, we sent a password recovery link"
+        message=translate(
+            _("If that email is registered, we sent a password recovery link")
+        )
     )
 
 
@@ -95,7 +98,7 @@ async def reset_password(session: SessionDep, body: NewPassword) -> Message:
         db_user=user,
         user_in=UserUpdate(password=body.new_password),
     )
-    return Message(message="Password updated successfully")
+    return Message(message=translate(_("Password updated successfully")))
 
 
 @router.post(
@@ -115,7 +118,7 @@ async def recover_password_html_content(email: str, session: SessionDep) -> Any:
         raise UserNotFoundError
     password_reset_token = generate_password_reset_token(email=email)
     email_data = generate_reset_password_email(
-        email_to=user.email, email=email, token=password_reset_token
+        email=email, token=password_reset_token, locale=user.locale
     )
 
     return HTMLResponse(

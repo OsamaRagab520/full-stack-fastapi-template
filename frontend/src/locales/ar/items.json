@@ -1,0 +1,34 @@
+{
+  "metaTitle": "العناصر - قالب FastAPI",
+  "heading": "العناصر",
+  "subtitle": "أنشئ وأدر عناصرك",
+  "loadError": "تعذّر تحميل العناصر. يرجى المحاولة مرة أخرى.",
+  "empty": "ليس لديك أي عناصر بعد",
+  "emptyHint": "أضف عنصراً جديداً للبدء",
+  "add": "إضافة عنصر",
+  "columns": {
+    "id": "المعرّف",
+    "title": "العنوان",
+    "description": "الوصف",
+    "actions": "إجراءات"
+  },
+  "noDescription": "بدون وصف",
+  "copyId": "نسخ المعرّف",
+  "addDialog": {
+    "title": "إضافة عنصر",
+    "description": "املأ التفاصيل لإضافة عنصر جديد."
+  },
+  "editDialog": {
+    "title": "تعديل العنصر",
+    "description": "حدّث تفاصيل العنصر أدناه."
+  },
+  "titleLabel": "العنوان",
+  "titlePlaceholder": "العنوان",
+  "descriptionLabel": "الوصف",
+  "descriptionPlaceholder": "الوصف",
+  "createdToast": "تم إنشاء العنصر بنجاح",
+  "updatedToast": "تم تحديث العنصر بنجاح",
+  "deletedToast": "تم حذف العنصر بنجاح",
+  "delete": "حذف العنصر",
+  "deleteWarning": "سيتم حذف هذا العنصر نهائياً. هل أنت متأكد؟ لا يمكن التراجع عن هذا الإجراء."
+}

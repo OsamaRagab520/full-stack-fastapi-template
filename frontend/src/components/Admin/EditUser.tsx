@@ -1,7 +1,8 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Pencil } from "lucide-react"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
+import { useTranslation } from "react-i18next"
 import { z } from "zod"
 
 import { type UserPublic, UsersService } from "@/client"
@@ -29,25 +30,14 @@ import { Input } from "@/components/ui/input"
 import { LoadingButton } from "@/components/ui/loading-button"
 import { useEntityMutation } from "@/hooks/useEntityMutation"
 
-const formSchema = z
-  .object({
-    email: z.email({ message: "Invalid email address" }),
-    full_name: z.string().optional(),
-    password: z
-      .string()
-      .min(8, { message: "Password must be at least 8 characters" })
-      .optional()
-      .or(z.literal("")),
-    confirm_password: z.string().optional(),
-    is_superuser: z.boolean().optional(),
-    is_active: z.boolean().optional(),
-  })
-  .refine((data) => !data.password || data.password === data.confirm_password, {
-    message: "The passwords don't match",
-    path: ["confirm_password"],
-  })
-
-type FormData = z.infer<typeof formSchema>
+type FormData = {
+  email: string
+  full_name?: string
+  password?: string
+  confirm_password?: string
+  is_superuser?: boolean
+  is_active?: boolean
+}
 
 interface EditUserProps {
   user: UserPublic
@@ -55,7 +45,33 @@ interface EditUserProps {
 }
 
 const EditUser = ({ user, onSuccess }: EditUserProps) => {
+  const { t } = useTranslation()
   const [isOpen, setIsOpen] = useState(false)
+
+  const formSchema = useMemo(
+    () =>
+      z
+        .object({
+          email: z.email({ message: t("validations.emailInvalid") }),
+          full_name: z.string().optional(),
+          password: z
+            .string()
+            .min(8, { message: t("validations.passwordMinLength") })
+            .optional()
+            .or(z.literal("")),
+          confirm_password: z.string().optional(),
+          is_superuser: z.boolean().optional(),
+          is_active: z.boolean().optional(),
+        })
+        .refine(
+          (data) => !data.password || data.password === data.confirm_password,
+          {
+            message: t("validations.passwordsDontMatch"),
+            path: ["confirm_password"],
+          },
+        ),
+    [t],
+  )
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -72,7 +88,7 @@ const EditUser = ({ user, onSuccess }: EditUserProps) => {
   const mutation = useEntityMutation({
     mutationFn: (data: FormData) =>
       UsersService.updateUser({ userId: user.id, requestBody: data }),
-    successMessage: "User updated successfully",
+    successMessage: t("users:editUser.updatedToast"),
     invalidate: ["users"],
     onSuccess: () => {
       setIsOpen(false)
@@ -96,15 +112,15 @@ const EditUser = ({ user, onSuccess }: EditUserProps) => {
         onClick={() => setIsOpen(true)}
       >
         <Pencil />
-        Edit User
+        {t("actions.edit")}
       </DropdownMenuItem>
       <DialogContent className="sm:max-w-md">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <DialogHeader>
-              <DialogTitle>Edit User</DialogTitle>
+              <DialogTitle>{t("users:editUser.dialogTitle")}</DialogTitle>
               <DialogDescription>
-                Update the user details below.
+                {t("users:editUser.description")}
               </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
@@ -114,11 +130,12 @@ const EditUser = ({ user, onSuccess }: EditUserProps) => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Email <span className="text-destructive">*</span>
+                      {t("users:addUser.emailLabel")}{" "}
+                      <span className="text-destructive">*</span>
                     </FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="Email"
+                        placeholder={t("users:addUser.emailLabel")}
                         type="email"
                         {...field}
                         required
@@ -134,9 +151,13 @@ const EditUser = ({ user, onSuccess }: EditUserProps) => {
                 name="full_name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Full Name</FormLabel>
+                    <FormLabel>{t("users:addUser.fullNameLabel")}</FormLabel>
                     <FormControl>
-                      <Input placeholder="Full name" type="text" {...field} />
+                      <Input
+                        placeholder={t("users:addUser.fullNameLabel")}
+                        type="text"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -148,10 +169,10 @@ const EditUser = ({ user, onSuccess }: EditUserProps) => {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Set Password</FormLabel>
+                    <FormLabel>{t("users:addUser.setPassword")}</FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="Password"
+                        placeholder={t("users:addUser.passwordLabel")}
                         type="password"
                         {...field}
                       />
@@ -166,10 +187,12 @@ const EditUser = ({ user, onSuccess }: EditUserProps) => {
                 name="confirm_password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Confirm Password</FormLabel>
+                    <FormLabel>
+                      {t("users:addUser.confirmPasswordLabel")}
+                    </FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="Password"
+                        placeholder={t("users:addUser.passwordLabel")}
                         type="password"
                         {...field}
                       />
@@ -190,7 +213,9 @@ const EditUser = ({ user, onSuccess }: EditUserProps) => {
                         onCheckedChange={field.onChange}
                       />
                     </FormControl>
-                    <FormLabel className="font-normal">Is superuser?</FormLabel>
+                    <FormLabel className="font-normal">
+                      {t("users:addUser.isSuperuser")}
+                    </FormLabel>
                   </FormItem>
                 )}
               />
@@ -206,7 +231,9 @@ const EditUser = ({ user, onSuccess }: EditUserProps) => {
                         onCheckedChange={field.onChange}
                       />
                     </FormControl>
-                    <FormLabel className="font-normal">Is active?</FormLabel>
+                    <FormLabel className="font-normal">
+                      {t("users:addUser.isActive")}
+                    </FormLabel>
                   </FormItem>
                 )}
               />
@@ -215,11 +242,11 @@ const EditUser = ({ user, onSuccess }: EditUserProps) => {
             <DialogFooter>
               <DialogClose asChild>
                 <Button variant="outline" disabled={mutation.isPending}>
-                  Cancel
+                  {t("actions.cancel")}
                 </Button>
               </DialogClose>
               <LoadingButton type="submit" loading={mutation.isPending}>
-                Save
+                {t("actions.save")}
               </LoadingButton>
             </DialogFooter>
           </form>

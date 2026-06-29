@@ -1,6 +1,7 @@
 import type { ColumnDef } from "@tanstack/react-table"
+import type { TFunction } from "i18next"
 import { Check, Copy } from "lucide-react"
-
+import { useTranslation } from "react-i18next"
 import type { ItemPublic } from "@/client"
 import { Button } from "@/components/ui/button"
 import { useCopyToClipboard } from "@/hooks/useCopyToClipboard"
@@ -8,6 +9,7 @@ import { cn } from "@/lib/utils"
 import { ItemActionsMenu } from "./ItemActionsMenu"
 
 function CopyId({ id }: { id: string }) {
+  const { t } = useTranslation()
   const [copiedText, copy] = useCopyToClipboard()
   const isCopied = copiedText === id
 
@@ -25,28 +27,28 @@ function CopyId({ id }: { id: string }) {
         ) : (
           <Copy className="size-3" />
         )}
-        <span className="sr-only">Copy ID</span>
+        <span className="sr-only">{t("items:copyId")}</span>
       </Button>
     </div>
   )
 }
 
-export const columns: ColumnDef<ItemPublic>[] = [
+export const getColumns = (t: TFunction): ColumnDef<ItemPublic>[] => [
   {
     accessorKey: "id",
-    header: "ID",
+    header: t("items:columns.id"),
     cell: ({ row }) => <CopyId id={row.original.id} />,
   },
   {
     accessorKey: "title",
-    header: "Title",
+    header: t("items:columns.title"),
     cell: ({ row }) => (
       <span className="font-medium">{row.original.title}</span>
     ),
   },
   {
     accessorKey: "description",
-    header: "Description",
+    header: t("items:columns.description"),
     cell: ({ row }) => {
       const description = row.original.description
       return (
@@ -56,14 +58,14 @@ export const columns: ColumnDef<ItemPublic>[] = [
             !description && "italic",
           )}
         >
-          {description || "No description"}
+          {description || t("items:noDescription")}
         </span>
       )
     },
   },
   {
     id: "actions",
-    header: () => <span className="sr-only">Actions</span>,
+    header: () => <span className="sr-only">{t("items:columns.actions")}</span>,
     cell: ({ row }) => (
       <div className="flex justify-end">
         <ItemActionsMenu item={row.original} />

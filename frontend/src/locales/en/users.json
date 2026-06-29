@@ -1,0 +1,76 @@
+{
+  "admin": {
+    "metaTitle": "Admin - FastAPI Template",
+    "heading": "Users",
+    "subtitle": "Manage user accounts and permissions",
+    "loadError": "Unable to load users. Please try again.",
+    "add": "Add User",
+    "columns": {
+      "fullName": "Full Name",
+      "email": "Email",
+      "role": "Role",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "roleSuperuser": "Superuser",
+    "roleUser": "User",
+    "statusActive": "Active",
+    "statusInactive": "Inactive"
+  },
+  "addUser": {
+    "dialogTitle": "Add User",
+    "description": "Fill in the form below to add a new user to the system.",
+    "fullNameLabel": "Full name",
+    "emailLabel": "Email",
+    "passwordLabel": "Password",
+    "confirmPasswordLabel": "Confirm Password",
+    "isSuperuser": "Is superuser?",
+    "isActive": "Is active?",
+    "setPassword": "Set Password",
+    "createdToast": "User created successfully"
+  },
+  "editUser": {
+    "dialogTitle": "Edit User",
+    "description": "Update the user details below.",
+    "updatedToast": "User updated successfully"
+  },
+  "deleteUser": {
+    "title": "Delete User",
+    "warning": "All items associated with this user will also be permanently deleted. Are you sure? This action cannot be undone.",
+    "deletedToast": "The user was deleted successfully"
+  },
+  "settings": {
+    "metaTitle": "Settings - FastAPI Template",
+    "heading": "User Settings",
+    "subtitle": "Manage your account settings and preferences",
+    "tabs": {
+      "profile": "My profile",
+      "password": "Password",
+      "danger": "Danger zone"
+    }
+  },
+  "userInformation": {
+    "title": "User Information",
+    "fullNameLabel": "Full name",
+    "emailLabel": "Email",
+    "updatedToast": "User updated successfully"
+  },
+  "changePassword": {
+    "title": "Change Password",
+    "currentLabel": "Current Password",
+    "newLabel": "New Password",
+    "confirmLabel": "Confirm Password",
+    "submit": "Update Password",
+    "updatedToast": "Password updated successfully"
+  },
+  "deleteAccount": {
+    "title": "Delete Account",
+    "description": "Permanently delete your account and all associated data."
+  },
+  "deleteConfirmation": {
+    "title": "Confirmation Required",
+    "warning": "Are you absolutely sure? This action cannot be undone. This will permanently delete your account and remove your data from our servers. Please type your email to confirm.",
+    "confirm": "Confirm",
+    "deletedToast": "Your account has been successfully deleted"
+  }
+}

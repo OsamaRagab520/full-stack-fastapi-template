@@ -14,4 +14,6 @@ async def create_random_item(db: AsyncSession) -> Item:
     title = random_lower_string()
     description = random_lower_string()
     item_in = ItemCreate(title=title, description=description)
-    return await items_service.create_item(session=db, item_in=item_in, owner_id=owner_id)
+    return await items_service.create_item(
+        session=db, item_in=item_in, owner_id=owner_id
+    )

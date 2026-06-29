@@ -1,16 +1,17 @@
 from app.core.exceptions import HTTPDomainError
+from app.core.i18n import _
 
 
 class InvalidCredentialsError(HTTPDomainError):
     status_code = 400
-    detail = "Incorrect email or password"
+    detail = _("Incorrect email or password")
 
 
 class InactiveUserError(HTTPDomainError):
     status_code = 400
-    detail = "Inactive user"
+    detail = _("Inactive user")
 
 
 class InvalidTokenError(HTTPDomainError):
     status_code = 400
-    detail = "Invalid token"
+    detail = _("Invalid token")

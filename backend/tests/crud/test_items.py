@@ -26,7 +26,9 @@ async def test_create_item(db: AsyncSession) -> None:
     title = random_lower_string()
     description = random_lower_string()
     item_in = ItemCreate(title=title, description=description)
-    item = await items_service.create_item(session=db, item_in=item_in, owner_id=user.id)
+    item = await items_service.create_item(
+        session=db, item_in=item_in, owner_id=user.id
+    )
     assert item.title == title
     assert item.description == description
     assert item.owner_id == user.id
@@ -37,7 +39,9 @@ async def test_create_item_without_description(db: AsyncSession) -> None:
     user = await create_random_user(db)
     title = random_lower_string()
     item_in = ItemCreate(title=title)
-    item = await items_service.create_item(session=db, item_in=item_in, owner_id=user.id)
+    item = await items_service.create_item(
+        session=db, item_in=item_in, owner_id=user.id
+    )
     assert item.title == title
     assert item.description is None
     assert item.owner_id == user.id
