@@ -43,7 +43,7 @@ async def test_invalid_token_error_translated(client: AsyncClient) -> None:
             "Accept-Language": "ar",
         },
     )
-    assert r.status_code == 403
+    assert r.status_code == 401
     assert r.json()["detail"] == "تعذر التحقق من بيانات الاعتماد"
 
 

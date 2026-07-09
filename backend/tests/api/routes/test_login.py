@@ -54,7 +54,7 @@ async def test_recovery_password(
     client: AsyncClient, normal_user_token_headers: dict[str, str]
 ) -> None:
     with (
-        patch("app.auth.router.send_email", return_value=None),
+        patch("app.emails.service.send_email", return_value=None),
         patch("app.emails.config.email_settings.SMTP_HOST", "smtp.example.com"),
         patch("app.emails.config.email_settings.SMTP_USER", "admin@example.com"),
     ):

@@ -12,11 +12,12 @@ class InactiveUserError(HTTPDomainError):
     detail = _("Inactive user")
 
 
-class InvalidTokenError(HTTPDomainError):
+class InvalidResetTokenError(HTTPDomainError):
     status_code = 400
     detail = _("Invalid token")
 
 
 class CouldNotValidateCredentialsError(HTTPDomainError):
-    status_code = 403
+    status_code = 401
     detail = _("Could not validate credentials")
+    headers = {"WWW-Authenticate": "Bearer"}

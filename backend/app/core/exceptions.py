@@ -17,6 +17,7 @@ class HTTPDomainError(Exception):
 
     status_code: int = 500
     detail: str = "Internal Server Error"
+    headers: dict[str, str] | None = None
 
 
 async def http_domain_exception_handler(
@@ -25,5 +26,7 @@ async def http_domain_exception_handler(
     assert isinstance(exc, HTTPDomainError)
     locale = getattr(request.state, "locale", None) or current_locale.get()
     return JSONResponse(
-        status_code=exc.status_code, content={"detail": translate(exc.detail, locale)}
+        status_code=exc.status_code,
+        content={"detail": translate(exc.detail, locale)},
+        headers=exc.headers,
     )

@@ -6,8 +6,7 @@ from fastapi import APIRouter, BackgroundTasks, Depends, Query, status
 from app.auth.dependencies import CurrentUser, get_current_active_superuser
 from app.core.db import SessionDep
 from app.core.i18n import _, translate
-from app.emails.config import email_settings
-from app.emails.service import generate_new_account_email, send_email
+from app.emails.service import send_new_account_email
 from app.models import Message
 from app.users import selectors as users_selectors
 from app.users import service as users_service
@@ -59,16 +58,7 @@ async def create_user(
     Create new user.
     """
     user = await users_service.create_user(session=session, user_create=user_in)
-    if email_settings.emails_enabled and user_in.email:
-        email_data = generate_new_account_email(
-            username=user_in.email, locale=user_in.locale
-        )
-        bg.add_task(
-            send_email,
-            email_to=user_in.email,
-            subject=email_data.subject,
-            html_content=email_data.html_content,
-        )
+    send_new_account_email(bg, email_to=user_in.email, locale=user_in.locale)
     return user
 
 

@@ -1,10 +1,13 @@
+import uuid
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
 import jwt
 from jwt.exceptions import InvalidTokenError
+from pydantic import ValidationError
 
 from app.auth.config import auth_settings
+from app.auth.schemas import TokenPayload
 
 ALGORITHM = "HS256"
 
@@ -17,6 +20,20 @@ def create_access_token(subject: str | Any, expires_delta: timedelta) -> str:
 
 def decode_token(token: str) -> dict[str, Any]:
     return jwt.decode(token, auth_settings.SECRET_KEY, algorithms=[ALGORITHM])
+
+
+def read_access_subject(token: str) -> uuid.UUID | None:
+    """Return the user id an access token authenticates, or None if invalid.
+
+    Owns all JWT-level failure handling so callers never touch the ``jwt``
+    library: a bad signature, expired token, malformed payload, or non-UUID
+    subject all collapse to ``None``.
+    """
+    try:
+        payload = decode_token(token)
+        return uuid.UUID(TokenPayload(**payload).sub)
+    except (InvalidTokenError, ValidationError, ValueError):
+        return None
 
 
 def generate_password_reset_token(email: str) -> str:

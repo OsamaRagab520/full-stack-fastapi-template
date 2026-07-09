@@ -3,7 +3,9 @@ from pydantic.networks import EmailStr
 
 from app.auth.dependencies import get_current_active_superuser
 from app.core.i18n import _, translate
-from app.emails.service import generate_test_email, send_email
+from app.emails.config import email_settings
+from app.emails.exceptions import EmailDeliveryNotConfiguredError
+from app.emails.service import send_test_email
 from app.models import Message
 
 router = APIRouter(prefix="/utils", tags=["utils"])
@@ -18,13 +20,9 @@ async def test_email(email_to: EmailStr, bg: BackgroundTasks) -> Message:
     """
     Test emails.
     """
-    email_data = generate_test_email(email_to=email_to)
-    bg.add_task(
-        send_email,
-        email_to=email_to,
-        subject=email_data.subject,
-        html_content=email_data.html_content,
-    )
+    if not email_settings.emails_enabled:
+        raise EmailDeliveryNotConfiguredError
+    send_test_email(bg, email_to=email_to)
     return Message(message=translate(_("Test email sent")))
 
 

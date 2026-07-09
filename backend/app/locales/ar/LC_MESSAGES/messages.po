@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-07-09 22:29+0300\n"
+"POT-Creation-Date: 2026-07-10 01:31+0300\n"
 "PO-Revision-Date: 2026-06-28 16:42+0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: ar\n"
@@ -19,7 +19,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: app/api/routes/utils.py:28
+#: app/api/routes/utils.py:26
 msgid "Test email sent"
 msgstr "تم إرسال رسالة اختبار"
 
@@ -39,40 +39,44 @@ msgstr "الرمز غير صالح"
 msgid "Could not validate credentials"
 msgstr "تعذر التحقق من بيانات الاعتماد"
 
-#: app/auth/router.py:78
+#: app/auth/router.py:72
 msgid "If that email is registered, we sent a password recovery link"
 msgstr "إذا كان هذا البريد الإلكتروني مسجلاً، فقد أرسلنا رابط استعادة كلمة المرور"
 
-#: app/auth/router.py:101 app/users/router.py:114
+#: app/auth/router.py:95 app/users/router.py:104
 msgid "Password updated successfully"
 msgstr "تم تحديث كلمة المرور بنجاح"
 
-#: app/emails/service.py:73
+#: app/emails/exceptions.py:7
+msgid "Email delivery is not configured"
+msgstr "خدمة إرسال البريد الإلكتروني غير مُهيأة"
+
+#: app/emails/service.py:78
 #, python-brace-format
 msgid "{project_name} - Test email"
 msgstr "{project_name} - رسالة اختبار"
 
-#: app/emails/service.py:75
+#: app/emails/service.py:80
 #, python-brace-format
 msgid "Test email for: {email}"
 msgstr "رسالة اختبار لـ: {email}"
 
-#: app/emails/service.py:87
+#: app/emails/service.py:92
 #, python-brace-format
 msgid "{project_name} - Password recovery for user {email}"
 msgstr "{project_name} - استعادة كلمة المرور للمستخدم {email}"
 
-#: app/emails/service.py:96
+#: app/emails/service.py:101
 #, python-brace-format
 msgid "{project_name} - Password Recovery"
 msgstr "{project_name} - استعادة كلمة المرور"
 
-#: app/emails/service.py:100
+#: app/emails/service.py:105
 #, python-brace-format
 msgid "Hello {username}"
 msgstr "مرحباً {username}"
 
-#: app/emails/service.py:103
+#: app/emails/service.py:108
 msgid ""
 "We've received a request to reset your password. You can do it by "
 "clicking the button below:"
@@ -80,47 +84,47 @@ msgstr ""
 "لقد تلقينا طلباً لإعادة تعيين كلمة المرور الخاصة بك. يمكنك القيام بذلك "
 "عبر النقر على الزر أدناه:"
 
-#: app/emails/service.py:108
+#: app/emails/service.py:113
 msgid "Reset password"
 msgstr "إعادة تعيين كلمة المرور"
 
-#: app/emails/service.py:110
+#: app/emails/service.py:115
 msgid "Or copy and paste the following link into your browser:"
 msgstr "أو انسخ الرابط التالي والصقه في متصفحك:"
 
-#: app/emails/service.py:113
+#: app/emails/service.py:118
 #, python-brace-format
 msgid "This password will expire in {valid_hours} hours."
 msgstr "تنتهي صلاحية كلمة المرور هذه خلال {valid_hours} ساعات."
 
-#: app/emails/service.py:119
+#: app/emails/service.py:124
 msgid "If you didn't request a password recovery you can disregard this email."
 msgstr "إذا لم تطلب استعادة كلمة المرور فيمكنك تجاهل هذه الرسالة."
 
-#: app/emails/service.py:134
+#: app/emails/service.py:178
 #, python-brace-format
 msgid "{project_name} - New account for user {username}"
 msgstr "{project_name} - حساب جديد للمستخدم {username}"
 
-#: app/emails/service.py:141
+#: app/emails/service.py:185
 #, python-brace-format
 msgid "{project_name} - New Account"
 msgstr "{project_name} - حساب جديد"
 
-#: app/emails/service.py:145
+#: app/emails/service.py:189
 msgid "Welcome to your new account!"
 msgstr "مرحباً بك في حسابك الجديد!"
 
-#: app/emails/service.py:146
+#: app/emails/service.py:190
 msgid "Here are your account details:"
 msgstr "إليك تفاصيل حسابك:"
 
-#: app/emails/service.py:147
+#: app/emails/service.py:191
 #, python-brace-format
 msgid "Username: {username}"
 msgstr "اسم المستخدم: {username}"
 
-#: app/emails/service.py:148
+#: app/emails/service.py:192
 msgid "Go to Dashboard"
 msgstr "الذهاب إلى لوحة التحكم"
 
@@ -164,7 +168,7 @@ msgstr "المستخدم غير موجود"
 msgid "The user doesn't have enough privileges"
 msgstr "لا يمتلك المستخدم صلاحيات كافية"
 
-#: app/users/router.py:139 app/users/router.py:221
+#: app/users/router.py:129 app/users/router.py:211
 msgid "User deleted successfully"
 msgstr "تم حذف المستخدم بنجاح"
 

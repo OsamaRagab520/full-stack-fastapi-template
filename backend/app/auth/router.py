@@ -12,7 +12,7 @@ from app.auth.schemas import NewPassword, Token
 from app.auth.tokens import create_access_token, generate_password_reset_token
 from app.core.db import SessionDep
 from app.core.i18n import _, translate
-from app.emails.service import generate_reset_password_email, send_email
+from app.emails.service import generate_reset_password_email, send_reset_password_email
 from app.models import Message
 from app.users import selectors as users_selectors
 from app.users import service as users_service
@@ -64,14 +64,8 @@ async def recover_password(
 
     if user:
         password_reset_token = generate_password_reset_token(email=email)
-        email_data = generate_reset_password_email(
-            email=email, token=password_reset_token, locale=user.locale
-        )
-        bg.add_task(
-            send_email,
-            email_to=user.email,
-            subject=email_data.subject,
-            html_content=email_data.html_content,
+        send_reset_password_email(
+            bg, email_to=user.email, token=password_reset_token, locale=user.locale
         )
     return Message(
         message=translate(

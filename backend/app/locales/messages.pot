@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-07-09 22:29+0300\n"
+"POT-Creation-Date: 2026-07-10 01:31+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: app/api/routes/utils.py:28
+#: app/api/routes/utils.py:26
 msgid "Test email sent"
 msgstr ""
 
@@ -37,86 +37,90 @@ msgstr ""
 msgid "Could not validate credentials"
 msgstr ""
 
-#: app/auth/router.py:78
+#: app/auth/router.py:72
 msgid "If that email is registered, we sent a password recovery link"
 msgstr ""
 
-#: app/auth/router.py:101 app/users/router.py:114
+#: app/auth/router.py:95 app/users/router.py:104
 msgid "Password updated successfully"
 msgstr ""
 
-#: app/emails/service.py:73
+#: app/emails/exceptions.py:7
+msgid "Email delivery is not configured"
+msgstr ""
+
+#: app/emails/service.py:78
 #, python-brace-format
 msgid "{project_name} - Test email"
 msgstr ""
 
-#: app/emails/service.py:75
+#: app/emails/service.py:80
 #, python-brace-format
 msgid "Test email for: {email}"
 msgstr ""
 
-#: app/emails/service.py:87
+#: app/emails/service.py:92
 #, python-brace-format
 msgid "{project_name} - Password recovery for user {email}"
 msgstr ""
 
-#: app/emails/service.py:96
+#: app/emails/service.py:101
 #, python-brace-format
 msgid "{project_name} - Password Recovery"
 msgstr ""
 
-#: app/emails/service.py:100
+#: app/emails/service.py:105
 #, python-brace-format
 msgid "Hello {username}"
 msgstr ""
 
-#: app/emails/service.py:103
+#: app/emails/service.py:108
 msgid ""
 "We've received a request to reset your password. You can do it by "
 "clicking the button below:"
 msgstr ""
 
-#: app/emails/service.py:108
+#: app/emails/service.py:113
 msgid "Reset password"
 msgstr ""
 
-#: app/emails/service.py:110
+#: app/emails/service.py:115
 msgid "Or copy and paste the following link into your browser:"
 msgstr ""
 
-#: app/emails/service.py:113
+#: app/emails/service.py:118
 #, python-brace-format
 msgid "This password will expire in {valid_hours} hours."
 msgstr ""
 
-#: app/emails/service.py:119
+#: app/emails/service.py:124
 msgid "If you didn't request a password recovery you can disregard this email."
 msgstr ""
 
-#: app/emails/service.py:134
+#: app/emails/service.py:178
 #, python-brace-format
 msgid "{project_name} - New account for user {username}"
 msgstr ""
 
-#: app/emails/service.py:141
+#: app/emails/service.py:185
 #, python-brace-format
 msgid "{project_name} - New Account"
 msgstr ""
 
-#: app/emails/service.py:145
+#: app/emails/service.py:189
 msgid "Welcome to your new account!"
 msgstr ""
 
-#: app/emails/service.py:146
+#: app/emails/service.py:190
 msgid "Here are your account details:"
 msgstr ""
 
-#: app/emails/service.py:147
+#: app/emails/service.py:191
 #, python-brace-format
 msgid "Username: {username}"
 msgstr ""
 
-#: app/emails/service.py:148
+#: app/emails/service.py:192
 msgid "Go to Dashboard"
 msgstr ""
 
@@ -160,7 +164,7 @@ msgstr ""
 msgid "The user doesn't have enough privileges"
 msgstr ""
 
-#: app/users/router.py:139 app/users/router.py:221
+#: app/users/router.py:129 app/users/router.py:211
 msgid "User deleted successfully"
 msgstr ""
 

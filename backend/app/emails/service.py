@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any
 
 import emails
+from fastapi import BackgroundTasks
 from jinja2 import Template
 
 from app.auth.config import auth_settings
@@ -46,7 +47,10 @@ def send_email(
     html_content: str = "",
 ) -> None:
     if not email_settings.emails_enabled:
-        raise RuntimeError("no provided configuration for email variables")
+        logger.warning(
+            "Email to %s skipped: email delivery is not configured", email_to
+        )
+        return
     assert email_settings.EMAILS_FROM_EMAIL  # narrow Optional for the type checker
     message = emails.message.Message(
         subject=subject,
@@ -128,6 +132,45 @@ def generate_reset_password_email(
         context={"link": link, "t": t},
     )
     return EmailData(html_content=html_content, subject=subject)
+
+
+def _queue(bg: BackgroundTasks, email_to: str, data: EmailData) -> None:
+    bg.add_task(
+        send_email,
+        email_to=email_to,
+        subject=data.subject,
+        html_content=data.html_content,
+    )
+
+
+def send_new_account_email(
+    bg: BackgroundTasks, *, email_to: str, locale: str | None = None
+) -> None:
+    """Queue the welcome email for a newly created account.
+
+    Rendering the message and deciding whether it actually goes out (see
+    :func:`send_email`, a no-op when email is unconfigured) live here, so callers
+    just express intent — one line, no ``emails_enabled`` check of their own.
+    """
+    _queue(bg, email_to, generate_new_account_email(username=email_to, locale=locale))
+
+
+def send_reset_password_email(
+    bg: BackgroundTasks, *, email_to: str, token: str, locale: str | None = None
+) -> None:
+    """Queue a password-reset email. No-op if email delivery is unconfigured."""
+    _queue(
+        bg,
+        email_to,
+        generate_reset_password_email(email=email_to, token=token, locale=locale),
+    )
+
+
+def send_test_email(
+    bg: BackgroundTasks, *, email_to: str, locale: str | None = None
+) -> None:
+    """Queue the diagnostic test email. No-op if email delivery is unconfigured."""
+    _queue(bg, email_to, generate_test_email(email_to=email_to, locale=locale))
 
 
 def generate_new_account_email(username: str, locale: str | None = None) -> EmailData:

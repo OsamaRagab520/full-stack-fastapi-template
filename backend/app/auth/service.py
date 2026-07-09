@@ -3,7 +3,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from app.auth.exceptions import (
     InactiveUserError,
     InvalidCredentialsError,
-    InvalidTokenError,
+    InvalidResetTokenError,
 )
 from app.auth.tokens import verify_password_reset_token
 from app.users import service as users_service
@@ -30,15 +30,15 @@ async def login(*, session: AsyncSession, email: str, password: str) -> User:
 async def resolve_reset_password_user(*, session: AsyncSession, token: str) -> User:
     """Resolve the user a password-reset token points at.
 
-    Raises InvalidTokenError for a bad/expired token or an unknown email, and
-    InactiveUserError if the account is disabled.
+    Raises InvalidResetTokenError for a bad/expired token or an unknown email,
+    and InactiveUserError if the account is disabled.
     """
     email = verify_password_reset_token(token=token)
     if email is None:
-        raise InvalidTokenError
+        raise InvalidResetTokenError
     user = await get_user_by_email(session=session, email=email)
     if user is None:
-        raise InvalidTokenError
+        raise InvalidResetTokenError
     if not user.is_active:
         raise InactiveUserError
     return user
