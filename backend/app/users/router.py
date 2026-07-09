@@ -141,7 +141,7 @@ async def delete_user_me(session: SessionDep, current_user: CurrentUser) -> Any:
 )
 @limiter.limit("10/hour")
 async def register_user(
-    _request: Request, session: SessionDep, user_in: UserRegister
+    request: Request, session: SessionDep, user_in: UserRegister
 ) -> Any:
     """
     Create new user without the need to be logged in.

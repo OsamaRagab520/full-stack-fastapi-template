@@ -40,5 +40,6 @@ async def validation_exception_handler(
                 msg = translate(template, locale)
         else:
             msg = translate(err["msg"], locale)
-        detail.append({**err, "msg": msg})
+        ctx_patch = {"ctx": _format_ctx(err["ctx"])} if "ctx" in err else {}
+        detail.append({**err, **ctx_patch, "msg": msg})
     return JSONResponse(status_code=422, content={"detail": detail})

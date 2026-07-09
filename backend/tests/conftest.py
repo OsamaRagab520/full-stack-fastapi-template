@@ -1,4 +1,4 @@
-from collections.abc import AsyncGenerator
+from collections.abc import AsyncGenerator, Generator
 
 import pytest
 from httpx import ASGITransport, AsyncClient
@@ -9,11 +9,26 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.core.config import settings
 from app.core.db import get_db, init_db
+from app.core.rate_limit import limiter
 from app.items.models import Item
 from app.main import app
 from app.users.models import User
 from tests.utils.user import authentication_token_from_email
 from tests.utils.utils import get_superuser_token_headers
+
+
+@pytest.fixture(scope="session", autouse=True)
+def disable_rate_limiting() -> None:
+    limiter.enabled = False
+
+
+@pytest.fixture
+def rate_limiting() -> Generator[None, None, None]:
+    """Re-enable rate limiting for a single test, then disable it again."""
+    limiter.reset()
+    limiter.enabled = True
+    yield
+    limiter.enabled = False
 
 _test_engine = create_async_engine(
     str(settings.SQLALCHEMY_DATABASE_URI),
