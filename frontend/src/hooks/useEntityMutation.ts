@@ -41,7 +41,7 @@ export function useEntityMutation<TData = unknown, TVariables = void>({
       showSuccessToast(successMessage)
       onSuccess?.(data)
     },
-    onError: handleError.bind(showErrorToast),
+    onError: (err) => handleError(err, showErrorToast),
     onSettled: invalidate
       ? () =>
           queryClient.invalidateQueries(

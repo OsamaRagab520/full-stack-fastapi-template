@@ -100,7 +100,7 @@ function ResetPassword() {
       form.reset()
       navigate({ to: "/login" })
     },
-    onError: handleError.bind(showErrorToast),
+    onError: (err) => handleError(err, showErrorToast),
   })
 
   const onSubmit = (data: FormData) => {

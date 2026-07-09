@@ -33,7 +33,7 @@ const useAuth = () => {
     onSuccess: () => {
       navigate({ to: "/login" })
     },
-    onError: handleError.bind(showErrorToast),
+    onError: (err) => handleError(err, showErrorToast),
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] })
     },
@@ -51,7 +51,7 @@ const useAuth = () => {
     onSuccess: () => {
       navigate({ to: "/" })
     },
-    onError: handleError.bind(showErrorToast),
+    onError: (err) => handleError(err, showErrorToast),
   })
 
   const logout = () => {

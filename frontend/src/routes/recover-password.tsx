@@ -72,7 +72,7 @@ function RecoverPassword() {
       showSuccessToast(t("auth:recover.success"))
       form.reset()
     },
-    onError: handleError.bind(showErrorToast),
+    onError: (err) => handleError(err, showErrorToast),
   })
 
   const onSubmit = async (data: FormData) => {
