@@ -47,6 +47,41 @@ msgstr "إذا كان هذا البريد الإلكتروني مسجلاً، ف
 msgid "Password updated successfully"
 msgstr "تم تحديث كلمة المرور بنجاح"
 
+#: app/core/rate_limit.py
+msgid "Too many requests"
+msgstr "طلبات كثيرة جداً"
+
+#: app/core/validation_i18n.py:10
+#, python-brace-format
+msgid "String should have at least {min_length} characters"
+msgstr "يجب أن يحتوي على {min_length} حرف على الأقل"
+
+#: app/core/validation_i18n.py:11
+#, python-brace-format
+msgid "String should have at most {max_length} characters"
+msgstr "يجب ألا يتجاوز {max_length} حرفاً"
+
+#: app/core/validation_i18n.py:12
+msgid "Field required"
+msgstr "هذا الحقل مطلوب"
+
+#: app/core/validation_i18n.py:13
+#, python-brace-format
+msgid "Value error, {error}"
+msgstr "خطأ في القيمة، {error}"
+
+#: app/core/validation_i18n.py:14
+msgid "Input should be a valid string"
+msgstr "يجب أن يكون الإدخال نصاً صالحاً"
+
+#: app/core/validation_i18n.py:15
+msgid "Input should be a valid boolean"
+msgstr "يجب أن يكون الإدخال قيمة منطقية"
+
+#: app/core/validation_i18n.py:16
+msgid "Input should be a valid integer"
+msgstr "يجب أن يكون الإدخال عدداً صحيحاً"
+
 #: app/emails/exceptions.py:7
 msgid "Email delivery is not configured"
 msgstr "خدمة إرسال البريد الإلكتروني غير مُهيأة"
@@ -158,7 +193,7 @@ msgstr "لا يمكن أن تكون كلمة المرور الجديدة مطا�
 
 #: app/users/exceptions.py:27
 msgid "Super users are not allowed to delete themselves"
-msgstr "لا يُسمح للمستخدمين المميزين بحذف أنفسهم"
+msgstr "لا يُسمح للمستخدمين المييزين بحذف أنفسهم"
 
 #: app/users/exceptions.py:32
 msgid "User not found"

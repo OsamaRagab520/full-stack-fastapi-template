@@ -45,6 +45,41 @@ msgstr ""
 msgid "Password updated successfully"
 msgstr ""
 
+#: app/core/rate_limit.py
+msgid "Too many requests"
+msgstr ""
+
+#: app/core/validation_i18n.py:10
+#, python-brace-format
+msgid "String should have at least {min_length} characters"
+msgstr ""
+
+#: app/core/validation_i18n.py:11
+#, python-brace-format
+msgid "String should have at most {max_length} characters"
+msgstr ""
+
+#: app/core/validation_i18n.py:12
+msgid "Field required"
+msgstr ""
+
+#: app/core/validation_i18n.py:13
+#, python-brace-format
+msgid "Value error, {error}"
+msgstr ""
+
+#: app/core/validation_i18n.py:14
+msgid "Input should be a valid string"
+msgstr ""
+
+#: app/core/validation_i18n.py:15
+msgid "Input should be a valid boolean"
+msgstr ""
+
+#: app/core/validation_i18n.py:16
+msgid "Input should be a valid integer"
+msgstr ""
+
 #: app/emails/exceptions.py:7
 msgid "Email delivery is not configured"
 msgstr ""

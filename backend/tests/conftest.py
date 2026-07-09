@@ -27,7 +27,7 @@ def anyio_backend() -> str:
 
 
 @pytest.fixture
-async def db() -> AsyncGenerator[AsyncSession, None]:
+async def db() -> AsyncGenerator[AsyncSession]:
     async with AsyncSession(_test_engine, expire_on_commit=False) as session:
         await init_db(session)
         yield session
@@ -37,8 +37,8 @@ async def db() -> AsyncGenerator[AsyncSession, None]:
 
 
 @pytest.fixture
-async def client(db: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
-    async def override_get_db() -> AsyncGenerator[AsyncSession, None]:
+async def client(db: AsyncSession) -> AsyncGenerator[AsyncClient]:
+    async def override_get_db() -> AsyncGenerator[AsyncSession]:
         yield db
 
     app.dependency_overrides[get_db] = override_get_db

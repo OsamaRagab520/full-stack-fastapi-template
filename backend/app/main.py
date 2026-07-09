@@ -3,7 +3,10 @@ from contextlib import asynccontextmanager
 
 import sentry_sdk
 from fastapi import FastAPI
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 from fastapi.routing import APIRoute
+from slowapi.errors import RateLimitExceeded
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.middleware.cors import CORSMiddleware
 from starlette.requests import Request
@@ -12,7 +15,9 @@ from starlette.responses import Response
 from app.api.main import api_router
 from app.core.config import settings
 from app.core.exceptions import HTTPDomainError, http_domain_exception_handler
-from app.core.i18n import current_locale, negotiate_locale
+from app.core.i18n import _, current_locale, negotiate_locale, translate
+from app.core.rate_limit import limiter
+from app.core.validation_i18n import validation_exception_handler
 
 _SHOW_DOCS_ENVS = {"local", "staging"}
 
@@ -42,6 +47,16 @@ class LocaleMiddleware(BaseHTTPMiddleware):
             current_locale.reset(token)
 
 
+async def rate_limit_exceeded_handler(
+    request: Request, _exc: Exception
+) -> JSONResponse:
+    locale = getattr(request.state, "locale", None) or current_locale.get()
+    return JSONResponse(
+        status_code=429,
+        content={"detail": translate(_("Too many requests"), locale)},
+    )
+
+
 @asynccontextmanager
 async def lifespan(_app: FastAPI) -> AsyncGenerator[None]:
     if settings.SENTRY_DSN and settings.ENVIRONMENT != "local":
@@ -61,6 +76,9 @@ app = FastAPI(
 # Map every typed domain error to its fixed HTTP status + detail, so routes
 # never catch them or raise HTTPException for domain failures.
 app.add_exception_handler(HTTPDomainError, http_domain_exception_handler)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, rate_limit_exceeded_handler)
+app.add_exception_handler(RequestValidationError, validation_exception_handler)
 
 app.add_middleware(LocaleMiddleware)
 

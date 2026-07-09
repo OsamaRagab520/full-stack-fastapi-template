@@ -2,10 +2,12 @@ import uuid
 from typing import Any
 
 from fastapi import APIRouter, BackgroundTasks, Depends, Query, status
+from starlette.requests import Request
 
 from app.auth.dependencies import CurrentUser, get_current_active_superuser
 from app.core.db import SessionDep
 from app.core.i18n import _, translate
+from app.core.rate_limit import limiter
 from app.emails.service import send_new_account_email
 from app.models import Message
 from app.users import selectors as users_selectors
@@ -137,7 +139,10 @@ async def delete_user_me(session: SessionDep, current_user: CurrentUser) -> Any:
         status.HTTP_400_BAD_REQUEST: {"description": "Email already registered"},
     },
 )
-async def register_user(session: SessionDep, user_in: UserRegister) -> Any:
+@limiter.limit("10/hour")
+async def register_user(
+    _request: Request, session: SessionDep, user_in: UserRegister
+) -> Any:
     """
     Create new user without the need to be logged in.
     """
