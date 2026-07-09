@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-06-28 17:02+0300\n"
+"POT-Creation-Date: 2026-07-09 22:29+0300\n"
 "PO-Revision-Date: 2026-06-28 16:42+0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: ar\n"
@@ -35,6 +35,10 @@ msgstr "المستخدم غير نشط"
 msgid "Invalid token"
 msgstr "الرمز غير صالح"
 
+#: app/auth/exceptions.py:22
+msgid "Could not validate credentials"
+msgstr "تعذر التحقق من بيانات الاعتماد"
+
 #: app/auth/router.py:78
 msgid "If that email is registered, we sent a password recovery link"
 msgstr "إذا كان هذا البريد الإلكتروني مسجلاً، فقد أرسلنا رابط استعادة كلمة المرور"
@@ -43,53 +47,53 @@ msgstr "إذا كان هذا البريد الإلكتروني مسجلاً، ف
 msgid "Password updated successfully"
 msgstr "تم تحديث كلمة المرور بنجاح"
 
-#: app/emails/service.py:72
+#: app/emails/service.py:73
 #, python-brace-format
 msgid "{project_name} - Test email"
 msgstr "{project_name} - رسالة اختبار"
 
-#: app/emails/service.py:73
+#: app/emails/service.py:75
 #, python-brace-format
 msgid "Test email for: {email}"
 msgstr "رسالة اختبار لـ: {email}"
 
-#: app/emails/service.py:85
+#: app/emails/service.py:87
 #, python-brace-format
 msgid "{project_name} - Password recovery for user {email}"
 msgstr "{project_name} - استعادة كلمة المرور للمستخدم {email}"
 
-#: app/emails/service.py:94
+#: app/emails/service.py:96
 #, python-brace-format
 msgid "{project_name} - Password Recovery"
 msgstr "{project_name} - استعادة كلمة المرور"
 
-#: app/emails/service.py:98
+#: app/emails/service.py:100
 #, python-brace-format
 msgid "Hello {username}"
 msgstr "مرحباً {username}"
 
-#: app/emails/service.py:101
+#: app/emails/service.py:103
 msgid ""
 "We've received a request to reset your password. You can do it by "
 "clicking the button below:"
 msgstr ""
-"لقد تلقينا طلباً لإعادة تعيين كلمة المرور الخاصة بك. يمكنك القيام بذلك عبر "
-"النقر على الزر أدناه:"
+"لقد تلقينا طلباً لإعادة تعيين كلمة المرور الخاصة بك. يمكنك القيام بذلك "
+"عبر النقر على الزر أدناه:"
 
-#: app/emails/service.py:106
+#: app/emails/service.py:108
 msgid "Reset password"
 msgstr "إعادة تعيين كلمة المرور"
 
-#: app/emails/service.py:108
+#: app/emails/service.py:110
 msgid "Or copy and paste the following link into your browser:"
 msgstr "أو انسخ الرابط التالي والصقه في متصفحك:"
 
-#: app/emails/service.py:111
+#: app/emails/service.py:113
 #, python-brace-format
 msgid "This password will expire in {valid_hours} hours."
 msgstr "تنتهي صلاحية كلمة المرور هذه خلال {valid_hours} ساعات."
 
-#: app/emails/service.py:117
+#: app/emails/service.py:119
 msgid "If you didn't request a password recovery you can disregard this email."
 msgstr "إذا لم تطلب استعادة كلمة المرور فيمكنك تجاهل هذه الرسالة."
 
@@ -163,3 +167,4 @@ msgstr "لا يمتلك المستخدم صلاحيات كافية"
 #: app/users/router.py:139 app/users/router.py:221
 msgid "User deleted successfully"
 msgstr "تم حذف المستخدم بنجاح"
+

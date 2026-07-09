@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-06-28 17:02+0300\n"
+"POT-Creation-Date: 2026-07-09 22:29+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -33,6 +33,10 @@ msgstr ""
 msgid "Invalid token"
 msgstr ""
 
+#: app/auth/exceptions.py:22
+msgid "Could not validate credentials"
+msgstr ""
+
 #: app/auth/router.py:78
 msgid "If that email is registered, we sent a password recovery link"
 msgstr ""
@@ -41,51 +45,51 @@ msgstr ""
 msgid "Password updated successfully"
 msgstr ""
 
-#: app/emails/service.py:72
+#: app/emails/service.py:73
 #, python-brace-format
 msgid "{project_name} - Test email"
 msgstr ""
 
-#: app/emails/service.py:73
+#: app/emails/service.py:75
 #, python-brace-format
 msgid "Test email for: {email}"
 msgstr ""
 
-#: app/emails/service.py:85
+#: app/emails/service.py:87
 #, python-brace-format
 msgid "{project_name} - Password recovery for user {email}"
 msgstr ""
 
-#: app/emails/service.py:94
+#: app/emails/service.py:96
 #, python-brace-format
 msgid "{project_name} - Password Recovery"
 msgstr ""
 
-#: app/emails/service.py:98
+#: app/emails/service.py:100
 #, python-brace-format
 msgid "Hello {username}"
 msgstr ""
 
-#: app/emails/service.py:101
+#: app/emails/service.py:103
 msgid ""
 "We've received a request to reset your password. You can do it by "
 "clicking the button below:"
 msgstr ""
 
-#: app/emails/service.py:106
+#: app/emails/service.py:108
 msgid "Reset password"
 msgstr ""
 
-#: app/emails/service.py:108
+#: app/emails/service.py:110
 msgid "Or copy and paste the following link into your browser:"
 msgstr ""
 
-#: app/emails/service.py:111
+#: app/emails/service.py:113
 #, python-brace-format
 msgid "This password will expire in {valid_hours} hours."
 msgstr ""
 
-#: app/emails/service.py:117
+#: app/emails/service.py:119
 msgid "If you didn't request a password recovery you can disregard this email."
 msgstr ""
 

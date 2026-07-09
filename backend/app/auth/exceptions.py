@@ -15,3 +15,8 @@ class InactiveUserError(HTTPDomainError):
 class InvalidTokenError(HTTPDomainError):
     status_code = 400
     detail = _("Invalid token")
+
+
+class CouldNotValidateCredentialsError(HTTPDomainError):
+    status_code = 403
+    detail = _("Could not validate credentials")
