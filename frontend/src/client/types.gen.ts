@@ -93,10 +93,10 @@ export type UsersPublic = {
 
 export type UserUpdate = {
     email?: (string | null);
-    is_active?: boolean;
-    is_superuser?: boolean;
+    is_active?: (boolean | null);
+    is_superuser?: (boolean | null);
     full_name?: (string | null);
-    locale?: string;
+    locale?: (string | null);
     password?: (string | null);
 };
 
@@ -110,6 +110,10 @@ export type ValidationError = {
     loc: Array<(string | number)>;
     msg: string;
     type: string;
+    input?: unknown;
+    ctx?: {
+        [key: string]: unknown;
+    };
 };
 
 export type ItemsReadItemsData = {

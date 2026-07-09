@@ -4,7 +4,7 @@ from functools import cache
 from pathlib import Path
 from typing import Any
 
-import emails  # type: ignore[import-untyped]
+import emails
 from jinja2 import Template
 
 from app.auth.config import auth_settings
@@ -47,7 +47,8 @@ def send_email(
 ) -> None:
     if not email_settings.emails_enabled:
         raise RuntimeError("no provided configuration for email variables")
-    message = emails.Message(
+    assert email_settings.EMAILS_FROM_EMAIL  # narrow Optional for the type checker
+    message = emails.message.Message(
         subject=subject,
         html=html_content,
         mail_from=(email_settings.EMAILS_FROM_NAME, email_settings.EMAILS_FROM_EMAIL),

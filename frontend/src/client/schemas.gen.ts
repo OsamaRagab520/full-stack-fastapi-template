@@ -442,14 +442,26 @@ export const UserUpdateSchema = {
             title: 'Email'
         },
         is_active: {
-            type: 'boolean',
-            title: 'Is Active',
-            default: true
+            anyOf: [
+                {
+                    type: 'boolean'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Is Active'
         },
         is_superuser: {
-            type: 'boolean',
-            title: 'Is Superuser',
-            default: false
+            anyOf: [
+                {
+                    type: 'boolean'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Is Superuser'
         },
         full_name: {
             anyOf: [
@@ -464,10 +476,16 @@ export const UserUpdateSchema = {
             title: 'Full Name'
         },
         locale: {
-            type: 'string',
-            maxLength: 5,
-            title: 'Locale',
-            default: 'en'
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 5
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Locale'
         },
         password: {
             anyOf: [
@@ -573,6 +591,13 @@ export const ValidationErrorSchema = {
         type: {
             type: 'string',
             title: 'Error Type'
+        },
+        input: {
+            title: 'Input'
+        },
+        ctx: {
+            type: 'object',
+            title: 'Context'
         }
     },
     type: 'object',

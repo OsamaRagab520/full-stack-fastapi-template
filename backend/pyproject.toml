@@ -4,13 +4,13 @@ version = "0.1.0"
 description = ""
 requires-python = ">=3.11,<4.0"
 dependencies = [
-    "fastapi[standard]<1.0.0,>=0.115",
+    "fastapi[standard]<1.0.0,>=0.138.1",
     "python-multipart<1.0.0,>=0.0.27",
     "email-validator<3.0.0.0,>=2.1.0.post1",
     "tenacity<10.0.0,>=8.2.3",
     "babel<3.0.0,>=2.15",
     "pydantic>=2.7",
-    "emails<1.0,>=0.6",
+    "emails>=1.1.2,<2.0",
     "jinja2<4.0.0,>=3.1.4",
     "alembic<2.0.0,>=1.13",
     "httpx<1.0.0,>=0.27",
