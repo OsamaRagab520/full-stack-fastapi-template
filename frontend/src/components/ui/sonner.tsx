@@ -8,17 +8,14 @@ import {
   TriangleAlertIcon,
 } from "lucide-react"
 import { useTheme } from "next-themes"
-import { useTranslation } from "react-i18next"
 import { Toaster as Sonner, type ToasterProps } from "sonner"
 
 const Toaster = ({ ...props }: ToasterProps) => {
   const { theme = "system" } = useTheme()
-  const { i18n } = useTranslation()
 
   return (
     <Sonner
       theme={theme as ToasterProps["theme"]}
-      dir={i18n.dir() as ToasterProps["dir"]}
       className="toaster group"
       icons={{
         success: <CircleCheckIcon className="size-4" />,

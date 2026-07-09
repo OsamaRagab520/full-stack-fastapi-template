@@ -42,7 +42,4 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 
 WORKDIR /app/backend/
 
-# Compile gettext catalogs (.mo) from source (.po)
-RUN pybabel compile -d app/locales
-
 CMD ["fastapi", "run", "--workers", "4", "app/main.py"]

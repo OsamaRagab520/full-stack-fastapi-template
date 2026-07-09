@@ -230,19 +230,20 @@ export const PrivateUserCreateSchema = {
     properties: {
         email: {
             type: 'string',
-            format: 'email',
             title: 'Email'
         },
         password: {
             type: 'string',
-            maxLength: 128,
-            minLength: 8,
             title: 'Password'
         },
         full_name: {
             type: 'string',
-            maxLength: 255,
             title: 'Full Name'
+        },
+        is_verified: {
+            type: 'boolean',
+            title: 'Is Verified',
+            default: false
         }
     },
     type: 'object',
@@ -317,12 +318,6 @@ export const UserCreateSchema = {
             ],
             title: 'Full Name'
         },
-        locale: {
-            type: 'string',
-            maxLength: 5,
-            title: 'Locale',
-            default: 'en'
-        },
         password: {
             type: 'string',
             maxLength: 128,
@@ -364,12 +359,6 @@ export const UserPublicSchema = {
                 }
             ],
             title: 'Full Name'
-        },
-        locale: {
-            type: 'string',
-            maxLength: 5,
-            title: 'Locale',
-            default: 'en'
         },
         id: {
             type: 'string',
@@ -463,12 +452,6 @@ export const UserUpdateSchema = {
             ],
             title: 'Full Name'
         },
-        locale: {
-            type: 'string',
-            maxLength: 5,
-            title: 'Locale',
-            default: 'en'
-        },
         password: {
             anyOf: [
                 {
@@ -513,18 +496,6 @@ export const UserUpdateMeSchema = {
                 }
             ],
             title: 'Email'
-        },
-        locale: {
-            anyOf: [
-                {
-                    type: 'string',
-                    maxLength: 5
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Locale'
         }
     },
     type: 'object',
@@ -573,6 +544,13 @@ export const ValidationErrorSchema = {
         type: {
             type: 'string',
             title: 'Error Type'
+        },
+        input: {
+            title: 'Input'
+        },
+        ctx: {
+            type: 'object',
+            title: 'Context'
         }
     },
     type: 'object',

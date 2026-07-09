@@ -8,7 +8,6 @@ dependencies = [
     "python-multipart<1.0.0,>=0.0.27",
     "email-validator<3.0.0.0,>=2.1.0.post1",
     "tenacity<10.0.0,>=8.2.3",
-    "babel<3.0.0,>=2.15",
     "pydantic>=2.7",
     "emails<1.0,>=0.6",
     "jinja2<4.0.0,>=3.1.4",

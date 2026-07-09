@@ -11,7 +11,6 @@ import { ApiError, OpenAPI } from "./client"
 import { ThemeProvider } from "./components/theme-provider"
 import { Toaster } from "./components/ui/sonner"
 import "./index.css"
-import i18n from "./i18n"
 import { tokenStore } from "./lib/tokenStore"
 import { routeTree } from "./routeTree.gen"
 
@@ -19,8 +18,6 @@ OpenAPI.BASE = import.meta.env.VITE_API_URL
 OpenAPI.TOKEN = async () => {
   return tokenStore.get() || ""
 }
-// Send the active UI language so backend errors/emails come back localized.
-OpenAPI.HEADERS = async () => ({ "Accept-Language": i18n.language })
 
 const handleApiError = (error: Error) => {
   if (error instanceof ApiError && [401, 403].includes(error.status)) {

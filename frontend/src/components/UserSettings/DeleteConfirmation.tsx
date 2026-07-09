@@ -1,5 +1,4 @@
 import { useForm } from "react-hook-form"
-import { useTranslation } from "react-i18next"
 
 import { UsersService } from "@/client"
 import { Button } from "@/components/ui/button"
@@ -18,13 +17,12 @@ import useAuth from "@/hooks/useAuth"
 import { useEntityMutation } from "@/hooks/useEntityMutation"
 
 const DeleteConfirmation = () => {
-  const { t } = useTranslation()
   const { handleSubmit } = useForm()
   const { logout } = useAuth()
 
   const mutation = useEntityMutation({
     mutationFn: () => UsersService.deleteUserMe(),
-    successMessage: t("users:deleteConfirmation.deletedToast"),
+    successMessage: "Your account has been successfully deleted",
     invalidate: ["currentUser"],
     onSuccess: () => {
       logout()
@@ -39,22 +37,25 @@ const DeleteConfirmation = () => {
     <Dialog>
       <DialogTrigger asChild>
         <Button variant="destructive" className="mt-3">
-          {t("users:deleteAccount.title")}
+          Delete Account
         </Button>
       </DialogTrigger>
       <DialogContent>
         <form onSubmit={handleSubmit(onSubmit)}>
           <DialogHeader>
-            <DialogTitle>{t("users:deleteConfirmation.title")}</DialogTitle>
+            <DialogTitle>Confirmation Required</DialogTitle>
             <DialogDescription>
-              {t("users:deleteConfirmation.warning")}
+              All your account data will be{" "}
+              <strong>permanently deleted.</strong> If you are sure, please
+              click <strong>"Confirm"</strong> to proceed. This action cannot be
+              undone.
             </DialogDescription>
           </DialogHeader>
 
           <DialogFooter className="mt-4">
             <DialogClose asChild>
               <Button variant="outline" disabled={mutation.isPending}>
-                {t("actions.cancel")}
+                Cancel
               </Button>
             </DialogClose>
             <LoadingButton
@@ -62,7 +63,7 @@ const DeleteConfirmation = () => {
               type="submit"
               loading={mutation.isPending}
             >
-              {t("actions.delete")}
+              Delete
             </LoadingButton>
           </DialogFooter>
         </form>

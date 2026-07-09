@@ -4,9 +4,7 @@ import {
   Link as RouterLink,
   redirect,
 } from "@tanstack/react-router"
-import { useMemo } from "react"
 import { useForm } from "react-hook-form"
-import { useTranslation } from "react-i18next"
 import { z } from "zod"
 
 import type { Body_login_login_access_token as AccessToken } from "@/client"
@@ -23,9 +21,16 @@ import { Input } from "@/components/ui/input"
 import { LoadingButton } from "@/components/ui/loading-button"
 import { PasswordInput } from "@/components/ui/password-input"
 import useAuth, { isLoggedIn } from "@/hooks/useAuth"
-import i18n from "@/i18n"
 
-type FormData = AccessToken
+const formSchema = z.object({
+  username: z.email(),
+  password: z
+    .string()
+    .min(1, { message: "Password is required" })
+    .min(8, { message: "Password must be at least 8 characters" }),
+}) satisfies z.ZodType<AccessToken>
+
+type FormData = z.infer<typeof formSchema>
 
 export const Route = createFileRoute("/login")({
   component: Login,
@@ -39,28 +44,14 @@ export const Route = createFileRoute("/login")({
   head: () => ({
     meta: [
       {
-        title: i18n.t("auth:login.metaTitle"),
+        title: "Log In - FastAPI Template",
       },
     ],
   }),
 })
 
 function Login() {
-  const { t } = useTranslation()
   const { loginMutation } = useAuth()
-
-  const formSchema = useMemo(
-    () =>
-      z.object({
-        username: z.email(),
-        password: z
-          .string()
-          .min(1, { message: t("validations.passwordRequired") })
-          .min(8, { message: t("validations.passwordMinLength") }),
-      }) satisfies z.ZodType<AccessToken>,
-    [t],
-  )
-
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     mode: "onBlur",
@@ -84,7 +75,7 @@ function Login() {
           className="flex flex-col gap-6"
         >
           <div className="flex flex-col items-center gap-2 text-center">
-            <h1 className="text-2xl font-bold">{t("auth:login.heading")}</h1>
+            <h1 className="text-2xl font-bold">Login to your account</h1>
           </div>
 
           <div className="grid gap-4">
@@ -93,7 +84,7 @@ function Login() {
               name="username"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t("auth:login.emailLabel")}</FormLabel>
+                  <FormLabel>Email</FormLabel>
                   <FormControl>
                     <Input
                       data-testid="email-input"
@@ -113,18 +104,18 @@ function Login() {
               render={({ field }) => (
                 <FormItem>
                   <div className="flex items-center">
-                    <FormLabel>{t("auth:login.passwordLabel")}</FormLabel>
+                    <FormLabel>Password</FormLabel>
                     <RouterLink
                       to="/recover-password"
-                      className="ms-auto text-sm underline-offset-4 hover:underline"
+                      className="ml-auto text-sm underline-offset-4 hover:underline"
                     >
-                      {t("auth:login.forgotPassword")}
+                      Forgot your password?
                     </RouterLink>
                   </div>
                   <FormControl>
                     <PasswordInput
                       data-testid="password-input"
-                      placeholder={t("auth:login.passwordLabel")}
+                      placeholder="Password"
                       {...field}
                     />
                   </FormControl>
@@ -134,14 +125,14 @@ function Login() {
             />
 
             <LoadingButton type="submit" loading={loginMutation.isPending}>
-              {t("auth:login.submit")}
+              Log In
             </LoadingButton>
           </div>
 
           <div className="text-center text-sm">
-            {t("auth:login.noAccount")}{" "}
+            Don't have an account yet?{" "}
             <RouterLink to="/signup" className="underline underline-offset-4">
-              {t("auth:login.signupLink")}
+              Sign up
             </RouterLink>
           </div>
         </form>

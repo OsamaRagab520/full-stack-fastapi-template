@@ -34,9 +34,6 @@ class Settings(AppBaseConfig):
     API_V1_STR: str = "/api/v1"
     FRONTEND_HOST: str = "http://localhost:5173"
 
-    SUPPORTED_LANGUAGES: list[str] = ["en", "ar"]
-    DEFAULT_LANGUAGE: str = "en"
-
     BACKEND_CORS_ORIGINS: Annotated[
         list[AnyUrl] | str, BeforeValidator(parse_cors)
     ] = []

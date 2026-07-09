@@ -22,7 +22,9 @@ async def test_get_access_token(client: AsyncClient) -> None:
         "username": settings.FIRST_SUPERUSER,
         "password": settings.FIRST_SUPERUSER_PASSWORD,
     }
-    r = await client.post(f"{settings.API_V1_STR}/login/access-token", data=login_data)
+    r = await client.post(
+        f"{settings.API_V1_STR}/login/access-token", data=login_data
+    )
     tokens = r.json()
     assert r.status_code == 200
     assert "access_token" in tokens
@@ -34,7 +36,9 @@ async def test_get_access_token_incorrect_password(client: AsyncClient) -> None:
         "username": settings.FIRST_SUPERUSER,
         "password": "incorrect",
     }
-    r = await client.post(f"{settings.API_V1_STR}/login/access-token", data=login_data)
+    r = await client.post(
+        f"{settings.API_V1_STR}/login/access-token", data=login_data
+    )
     assert r.status_code == 400
 
 
@@ -151,7 +155,9 @@ async def test_login_with_bcrypt_password_upgrades_to_argon2(
     assert user.hashed_password.startswith("$2")
 
     login_data = {"username": email, "password": password}
-    r = await client.post(f"{settings.API_V1_STR}/login/access-token", data=login_data)
+    r = await client.post(
+        f"{settings.API_V1_STR}/login/access-token", data=login_data
+    )
     assert r.status_code == 200
     tokens = r.json()
     assert "access_token" in tokens
@@ -183,7 +189,9 @@ async def test_login_with_argon2_password_keeps_hash(
     original_hash = user.hashed_password
 
     login_data = {"username": email, "password": password}
-    r = await client.post(f"{settings.API_V1_STR}/login/access-token", data=login_data)
+    r = await client.post(
+        f"{settings.API_V1_STR}/login/access-token", data=login_data
+    )
     assert r.status_code == 200
     tokens = r.json()
     assert "access_token" in tokens

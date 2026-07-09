@@ -1,5 +1,4 @@
 import type { ColumnDef } from "@tanstack/react-table"
-import type { TFunction } from "i18next"
 
 import type { UserPublic } from "@/client"
 import { Badge } from "@/components/ui/badge"
@@ -10,10 +9,10 @@ export type UserTableData = UserPublic & {
   isCurrentUser: boolean
 }
 
-export const getColumns = (t: TFunction): ColumnDef<UserTableData>[] => [
+export const columns: ColumnDef<UserTableData>[] = [
   {
     accessorKey: "full_name",
-    header: t("users:admin.columns.fullName"),
+    header: "Full Name",
     cell: ({ row }) => {
       const fullName = row.original.full_name
       return (
@@ -21,11 +20,11 @@ export const getColumns = (t: TFunction): ColumnDef<UserTableData>[] => [
           <span
             className={cn("font-medium", !fullName && "text-muted-foreground")}
           >
-            {fullName || t("na")}
+            {fullName || "N/A"}
           </span>
           {row.original.isCurrentUser && (
             <Badge variant="outline" className="text-xs">
-              {t("actions.you")}
+              You
             </Badge>
           )}
         </div>
@@ -34,25 +33,23 @@ export const getColumns = (t: TFunction): ColumnDef<UserTableData>[] => [
   },
   {
     accessorKey: "email",
-    header: t("users:admin.columns.email"),
+    header: "Email",
     cell: ({ row }) => (
       <span className="text-muted-foreground">{row.original.email}</span>
     ),
   },
   {
     accessorKey: "is_superuser",
-    header: t("users:admin.columns.role"),
+    header: "Role",
     cell: ({ row }) => (
       <Badge variant={row.original.is_superuser ? "default" : "secondary"}>
-        {row.original.is_superuser
-          ? t("users:admin.roleSuperuser")
-          : t("users:admin.roleUser")}
+        {row.original.is_superuser ? "Superuser" : "User"}
       </Badge>
     ),
   },
   {
     accessorKey: "is_active",
-    header: t("users:admin.columns.status"),
+    header: "Status",
     cell: ({ row }) => (
       <div className="flex items-center gap-2">
         <span
@@ -62,18 +59,14 @@ export const getColumns = (t: TFunction): ColumnDef<UserTableData>[] => [
           )}
         />
         <span className={row.original.is_active ? "" : "text-muted-foreground"}>
-          {row.original.is_active
-            ? t("users:admin.statusActive")
-            : t("users:admin.statusInactive")}
+          {row.original.is_active ? "Active" : "Inactive"}
         </span>
       </div>
     ),
   },
   {
     id: "actions",
-    header: () => (
-      <span className="sr-only">{t("users:admin.columns.actions")}</span>
-    ),
+    header: () => <span className="sr-only">Actions</span>,
     cell: ({ row }) => (
       <div className="flex justify-end">
         <UserActionsMenu user={row.original} />

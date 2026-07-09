@@ -1,7 +1,6 @@
 import type { ColumnDef } from "@tanstack/react-table"
-import type { TFunction } from "i18next"
 import { Check, Copy } from "lucide-react"
-import { useTranslation } from "react-i18next"
+
 import type { ItemPublic } from "@/client"
 import { Button } from "@/components/ui/button"
 import { useCopyToClipboard } from "@/hooks/useCopyToClipboard"
@@ -9,7 +8,6 @@ import { cn } from "@/lib/utils"
 import { ItemActionsMenu } from "./ItemActionsMenu"
 
 function CopyId({ id }: { id: string }) {
-  const { t } = useTranslation()
   const [copiedText, copy] = useCopyToClipboard()
   const isCopied = copiedText === id
 
@@ -27,28 +25,28 @@ function CopyId({ id }: { id: string }) {
         ) : (
           <Copy className="size-3" />
         )}
-        <span className="sr-only">{t("items:copyId")}</span>
+        <span className="sr-only">Copy ID</span>
       </Button>
     </div>
   )
 }
 
-export const getColumns = (t: TFunction): ColumnDef<ItemPublic>[] => [
+export const columns: ColumnDef<ItemPublic>[] = [
   {
     accessorKey: "id",
-    header: t("items:columns.id"),
+    header: "ID",
     cell: ({ row }) => <CopyId id={row.original.id} />,
   },
   {
     accessorKey: "title",
-    header: t("items:columns.title"),
+    header: "Title",
     cell: ({ row }) => (
       <span className="font-medium">{row.original.title}</span>
     ),
   },
   {
     accessorKey: "description",
-    header: t("items:columns.description"),
+    header: "Description",
     cell: ({ row }) => {
       const description = row.original.description
       return (
@@ -58,14 +56,14 @@ export const getColumns = (t: TFunction): ColumnDef<ItemPublic>[] => [
             !description && "italic",
           )}
         >
-          {description || t("items:noDescription")}
+          {description || "No description"}
         </span>
       )
     },
   },
   {
     id: "actions",
-    header: () => <span className="sr-only">{t("items:columns.actions")}</span>,
+    header: () => <span className="sr-only">Actions</span>,
     cell: ({ row }) => (
       <div className="flex justify-end">
         <ItemActionsMenu item={row.original} />

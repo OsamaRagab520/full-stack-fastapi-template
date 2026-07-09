@@ -90,14 +90,6 @@ understand local patterns, contracts, and pitfalls.
 
 ### Global Invariants
 
-- **Localization is full-stack.** Backend strings are translated via Babel
-  gettext catalogs (`backend/app/locales/`); the frontend via react-i18next
-  (`frontend/src/locales/`). The frontend sends `Accept-Language` on every API
-  call (set in `frontend/src/main.tsx`), and persists the active language in a
-  `lang` cookie + on the `User.locale` field. Supported languages:
-  `en`, `ar` (RTL). See each service's `AGENTS.md` for the marker/translation
-  conventions. After any backend user-facing string change, rebuild the catalog
-  (`pybabel extract/update/compile`).
 - **OpenAPI is the contract between the services.** After any backend
   route/schema change, regenerate the client: `bash ./scripts/generate-client.sh`
   (backend must be running). `frontend/src/client/` and `frontend/src/routeTree.gen.ts`

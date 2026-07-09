@@ -47,48 +47,6 @@ response. Routers never touch the ORM directly.
   for the domain you need — don't add unrelated keys to `Settings`.
 - **Docs visibility:** Swagger/ReDoc mount only when `ENVIRONMENT` is `local` or
   `staging` (`app/main.py`).
-- **User-facing strings are translated**, not hardcoded. Wrap them in `_()` and
-  translate via `translate()` at response time. Never return a raw English
-  literal as a domain `detail` or `Message`. See the i18n section below.
-
-## Internationalization (i18n)
-
-User-facing backend strings (domain-error `detail`, router `Message` responses,
-and email subjects/bodies) are translated via **Babel gettext** catalogs.
-
-- **Catalogs**: `app/locales/<lang>/LC_MESSAGES/messages.po` (source) → compiled
-  to `.mo` by `pybabel compile`. `.mo` is gitignored; it's compiled in the
-  Dockerfile build and by the `compile-gettext-catalogs` pre-commit hook (on
-  `.po` change). Locally run `uv run pybabel compile -d app/locales` after
-  editing a `.po`.
-- **Marker contract**: wrap any user-facing string in `_()` (an identity marker
-  in `app/core/i18n.py`). `pybabel extract` (config `babel.cfg`) finds these.
-  `_()` returns the English string unchanged; **never** let it do real work —
-  the English value is the gettext `msgid` regardless of `DEFAULT_LANGUAGE`.
-  Translate at response time with `translate(msgid, locale)`.
-- **Per-request locale**: `LocaleMiddleware` (`app/main.py`) parses
-  `Accept-Language` → `request.state.locale` + the `current_locale` context var.
-  Routes call `translate(_(...))` (reads the context var implicitly). The
-  domain-exception handler reads `request.state.locale` directly.
-- **Supported languages / default**: `SUPPORTED_LANGUAGES` + `DEFAULT_LANGUAGE`
-  in `core/config.py` (Settings). English has no compiled `.mo` — the
-  `NullTranslations` fallback returns the msgid, which *is* English.
-- **Emails**: `emails/service.py` `generate_*` functions take a `locale` param
-  (from the User's `locale` field), build a translated `t` dict, and pass it
-  into the MJML-rendered Jinja2 template. Edit `email-templates/src/*.mjml`
-  (using `{{ t.key }}`) and recompile with `bunx mjml` — never hand-edit
-  `build/`.
-- **User locale**: `User.locale` (default `"en"`), editable via `UserUpdateMe`.
-  Drives email localization.
-- **Workflow after touching strings**:
-  ```bash
-  pybabel extract -F babel.cfg -o app/locales/messages.pot .   # find new _() strings
-  pybabel update  -i app/locales/messages.pot -d app/locales   # merge into .po (review fuzzies!)
-  # edit app/locales/<lang>/LC_MESSAGES/messages.po
-  pybabel compile -d app/locales                                # build .mo
-  ```
-- **Deferred**: Pydantic 422 `ValidationError` messages are still English — see
-  `docs/i18n-pydantic-422.md`.
 
 ## Patterns
 Add an endpoint to an existing domain:

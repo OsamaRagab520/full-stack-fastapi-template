@@ -49,6 +49,7 @@ export type PrivateUserCreate = {
     email: string;
     password: string;
     full_name: string;
+    is_verified?: boolean;
 };
 
 export type Token = {
@@ -66,7 +67,6 @@ export type UserCreate = {
     is_active?: boolean;
     is_superuser?: boolean;
     full_name?: (string | null);
-    locale?: string;
     password: string;
 };
 
@@ -75,7 +75,6 @@ export type UserPublic = {
     is_active?: boolean;
     is_superuser?: boolean;
     full_name?: (string | null);
-    locale?: string;
     id: string;
     created_at?: (string | null);
 };
@@ -96,20 +95,22 @@ export type UserUpdate = {
     is_active?: boolean;
     is_superuser?: boolean;
     full_name?: (string | null);
-    locale?: string;
     password?: (string | null);
 };
 
 export type UserUpdateMe = {
     full_name?: (string | null);
     email?: (string | null);
-    locale?: (string | null);
 };
 
 export type ValidationError = {
     loc: Array<(string | number)>;
     msg: string;
     type: string;
+    input?: unknown;
+    ctx?: {
+        [key: string]: unknown;
+    };
 };
 
 export type ItemsReadItemsData = {

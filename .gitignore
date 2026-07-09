@@ -5,6 +5,3 @@ node_modules/
 /playwright-report/
 /blob-report/
 /playwright/.cache/
-
-# Compiled gettext catalogs (built from .po at image/pre-commit time)
-*.mo

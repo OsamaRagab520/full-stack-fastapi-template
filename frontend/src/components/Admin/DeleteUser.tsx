@@ -1,7 +1,6 @@
 import { Trash2 } from "lucide-react"
 import { useState } from "react"
 import { useForm } from "react-hook-form"
-import { useTranslation } from "react-i18next"
 
 import { UsersService } from "@/client"
 import { Button } from "@/components/ui/button"
@@ -24,13 +23,12 @@ interface DeleteUserProps {
 }
 
 const DeleteUser = ({ id, onSuccess }: DeleteUserProps) => {
-  const { t } = useTranslation()
   const [isOpen, setIsOpen] = useState(false)
   const { handleSubmit } = useForm()
 
   const mutation = useEntityMutation({
     mutationFn: (id: string) => UsersService.deleteUser({ userId: id }),
-    successMessage: t("users:deleteUser.deletedToast"),
+    successMessage: "The user was deleted successfully",
     invalidate: "all",
     onSuccess: () => {
       setIsOpen(false)
@@ -50,21 +48,23 @@ const DeleteUser = ({ id, onSuccess }: DeleteUserProps) => {
         onClick={() => setIsOpen(true)}
       >
         <Trash2 />
-        {t("users:deleteUser.title")}
+        Delete User
       </DropdownMenuItem>
       <DialogContent className="sm:max-w-md">
         <form onSubmit={handleSubmit(onSubmit)}>
           <DialogHeader>
-            <DialogTitle>{t("users:deleteUser.title")}</DialogTitle>
+            <DialogTitle>Delete User</DialogTitle>
             <DialogDescription>
-              {t("users:deleteUser.warning")}
+              All items associated with this user will also be{" "}
+              <strong>permanently deleted.</strong> Are you sure? You will not
+              be able to undo this action.
             </DialogDescription>
           </DialogHeader>
 
           <DialogFooter className="mt-4">
             <DialogClose asChild>
               <Button variant="outline" disabled={mutation.isPending}>
-                {t("actions.cancel")}
+                Cancel
               </Button>
             </DialogClose>
             <LoadingButton
@@ -72,7 +72,7 @@ const DeleteUser = ({ id, onSuccess }: DeleteUserProps) => {
               type="submit"
               loading={mutation.isPending}
             >
-              {t("actions.delete")}
+              Delete
             </LoadingButton>
           </DialogFooter>
         </form>

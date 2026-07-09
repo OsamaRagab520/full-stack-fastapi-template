@@ -4,9 +4,7 @@ import {
   Link as RouterLink,
   redirect,
 } from "@tanstack/react-router"
-import { useMemo } from "react"
 import { useForm } from "react-hook-form"
-import { useTranslation } from "react-i18next"
 import { z } from "zod"
 import { AuthLayout } from "@/components/Common/AuthLayout"
 import {
@@ -21,14 +19,25 @@ import { Input } from "@/components/ui/input"
 import { LoadingButton } from "@/components/ui/loading-button"
 import { PasswordInput } from "@/components/ui/password-input"
 import useAuth, { isLoggedIn } from "@/hooks/useAuth"
-import i18n from "@/i18n"
 
-type FormData = {
-  email: string
-  full_name: string
-  password: string
-  confirm_password: string
-}
+const formSchema = z
+  .object({
+    email: z.email(),
+    full_name: z.string().min(1, { message: "Full Name is required" }),
+    password: z
+      .string()
+      .min(1, { message: "Password is required" })
+      .min(8, { message: "Password must be at least 8 characters" }),
+    confirm_password: z
+      .string()
+      .min(1, { message: "Password confirmation is required" }),
+  })
+  .refine((data) => data.password === data.confirm_password, {
+    message: "The passwords don't match",
+    path: ["confirm_password"],
+  })
+
+type FormData = z.infer<typeof formSchema>
 
 export const Route = createFileRoute("/signup")({
   component: SignUp,
@@ -42,39 +51,14 @@ export const Route = createFileRoute("/signup")({
   head: () => ({
     meta: [
       {
-        title: i18n.t("auth:signup.metaTitle"),
+        title: "Sign Up - FastAPI Template",
       },
     ],
   }),
 })
 
 function SignUp() {
-  const { t } = useTranslation()
   const { signUpMutation } = useAuth()
-
-  const formSchema = useMemo(
-    () =>
-      z
-        .object({
-          email: z.email(),
-          full_name: z
-            .string()
-            .min(1, { message: t("validations.fullNameRequired") }),
-          password: z
-            .string()
-            .min(1, { message: t("validations.passwordRequired") })
-            .min(8, { message: t("validations.passwordMinLength") }),
-          confirm_password: z.string().min(1, {
-            message: t("validations.passwordRequired"),
-          }),
-        })
-        .refine((data) => data.password === data.confirm_password, {
-          message: t("validations.passwordsDontMatch"),
-          path: ["confirm_password"],
-        }),
-    [t],
-  )
-
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     mode: "onBlur",
@@ -103,7 +87,7 @@ function SignUp() {
           className="flex flex-col gap-6"
         >
           <div className="flex flex-col items-center gap-2 text-center">
-            <h1 className="text-2xl font-bold">{t("auth:signup.heading")}</h1>
+            <h1 className="text-2xl font-bold">Create an account</h1>
           </div>
 
           <div className="grid gap-4">
@@ -112,7 +96,7 @@ function SignUp() {
               name="full_name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t("auth:signup.fullNameLabel")}</FormLabel>
+                  <FormLabel>Full Name</FormLabel>
                   <FormControl>
                     <Input
                       data-testid="full-name-input"
@@ -131,7 +115,7 @@ function SignUp() {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t("auth:signup.emailLabel")}</FormLabel>
+                  <FormLabel>Email</FormLabel>
                   <FormControl>
                     <Input
                       data-testid="email-input"
@@ -150,11 +134,11 @@ function SignUp() {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t("auth:signup.passwordLabel")}</FormLabel>
+                  <FormLabel>Password</FormLabel>
                   <FormControl>
                     <PasswordInput
                       data-testid="password-input"
-                      placeholder={t("auth:signup.passwordPlaceholder")}
+                      placeholder="Password"
                       {...field}
                     />
                   </FormControl>
@@ -168,11 +152,11 @@ function SignUp() {
               name="confirm_password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t("auth:signup.confirmPasswordLabel")}</FormLabel>
+                  <FormLabel>Confirm Password</FormLabel>
                   <FormControl>
                     <PasswordInput
                       data-testid="confirm-password-input"
-                      placeholder={t("auth:signup.confirmPasswordPlaceholder")}
+                      placeholder="Confirm Password"
                       {...field}
                     />
                   </FormControl>
@@ -186,14 +170,14 @@ function SignUp() {
               className="w-full"
               loading={signUpMutation.isPending}
             >
-              {t("auth:signup.submit")}
+              Sign Up
             </LoadingButton>
           </div>
 
           <div className="text-center text-sm">
-            {t("auth:signup.haveAccount")}{" "}
+            Already have an account?{" "}
             <RouterLink to="/login" className="underline underline-offset-4">
-              {t("auth:signup.loginLink")}
+              Log in
             </RouterLink>
           </div>
         </form>

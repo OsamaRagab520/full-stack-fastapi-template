@@ -3,20 +3,16 @@ import { createRootRoute, HeadContent, Outlet } from "@tanstack/react-router"
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools"
 import ErrorComponent from "@/components/Common/ErrorComponent"
 import NotFound from "@/components/Common/NotFound"
-import { useLanguageDirection } from "@/hooks/useLanguageDirection"
 
 export const Route = createRootRoute({
-  component: () => {
-    useLanguageDirection()
-    return (
-      <>
-        <HeadContent />
-        <Outlet />
-        <TanStackRouterDevtools position="bottom-right" />
-        <ReactQueryDevtools initialIsOpen={false} />
-      </>
-    )
-  },
+  component: () => (
+    <>
+      <HeadContent />
+      <Outlet />
+      <TanStackRouterDevtools position="bottom-right" />
+      <ReactQueryDevtools initialIsOpen={false} />
+    </>
+  ),
   notFoundComponent: () => <NotFound />,
   errorComponent: () => <ErrorComponent />,
 })

@@ -2,7 +2,6 @@ from fastapi import APIRouter, BackgroundTasks, Depends, status
 from pydantic.networks import EmailStr
 
 from app.auth.dependencies import get_current_active_superuser
-from app.core.i18n import _, translate
 from app.emails.service import generate_test_email, send_email
 from app.models import Message
 
@@ -25,7 +24,7 @@ async def test_email(email_to: EmailStr, bg: BackgroundTasks) -> Message:
         subject=email_data.subject,
         html_content=email_data.html_content,
     )
-    return Message(message=translate(_("Test email sent")))
+    return Message(message="Test email sent")
 
 
 @router.get("/health-check/")

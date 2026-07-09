@@ -17,7 +17,6 @@ class UserBase(SQLModel):
     is_active: bool = True
     is_superuser: bool = False
     full_name: str | None = Field(default=None, max_length=255)
-    locale: str = Field(default="en", max_length=5)
 
 
 class User(UserBase, table=True):

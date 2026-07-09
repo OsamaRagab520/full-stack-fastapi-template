@@ -65,8 +65,6 @@ export class ItemsService {
                 id: data.id
             },
             errors: {
-                403: 'Not enough permissions',
-                404: 'Item not found',
                 422: 'Validation Error'
             }
         });
@@ -83,7 +81,7 @@ export class ItemsService {
      */
     public static updateItem(data: ItemsUpdateItemData): CancelablePromise<ItemsUpdateItemResponse> {
         return __request(OpenAPI, {
-            method: 'PATCH',
+            method: 'PUT',
             url: '/api/v1/items/{id}',
             path: {
                 id: data.id
@@ -91,8 +89,6 @@ export class ItemsService {
             body: data.requestBody,
             mediaType: 'application/json',
             errors: {
-                403: 'Not enough permissions',
-                404: 'Item not found',
                 422: 'Validation Error'
             }
         });
@@ -114,8 +110,6 @@ export class ItemsService {
                 id: data.id
             },
             errors: {
-                403: 'Not enough permissions',
-                404: 'Item not found',
                 422: 'Validation Error'
             }
         });
@@ -138,7 +132,6 @@ export class LoginService {
             formData: data.formData,
             mediaType: 'application/x-www-form-urlencoded',
             errors: {
-                400: 'Incorrect credentials or inactive user',
                 422: 'Validation Error'
             }
         });
@@ -193,7 +186,6 @@ export class LoginService {
             body: data.requestBody,
             mediaType: 'application/json',
             errors: {
-                400: 'Invalid token or inactive user',
                 422: 'Validation Error'
             }
         });
@@ -215,7 +207,6 @@ export class LoginService {
                 email: data.email
             },
             errors: {
-                404: 'User not found',
                 422: 'Validation Error'
             }
         });
@@ -283,7 +274,6 @@ export class UsersService {
             body: data.requestBody,
             mediaType: 'application/json',
             errors: {
-                400: 'Email already registered',
                 422: 'Validation Error'
             }
         });
@@ -311,10 +301,7 @@ export class UsersService {
     public static deleteUserMe(): CancelablePromise<UsersDeleteUserMeResponse> {
         return __request(OpenAPI, {
             method: 'DELETE',
-            url: '/api/v1/users/me',
-            errors: {
-                403: 'Superusers cannot delete themselves'
-            }
+            url: '/api/v1/users/me'
         });
     }
     
@@ -333,7 +320,6 @@ export class UsersService {
             body: data.requestBody,
             mediaType: 'application/json',
             errors: {
-                409: 'Email already in use',
                 422: 'Validation Error'
             }
         });
@@ -354,7 +340,6 @@ export class UsersService {
             body: data.requestBody,
             mediaType: 'application/json',
             errors: {
-                400: 'Wrong current password or same password',
                 422: 'Validation Error'
             }
         });
@@ -375,7 +360,6 @@ export class UsersService {
             body: data.requestBody,
             mediaType: 'application/json',
             errors: {
-                400: 'Email already registered',
                 422: 'Validation Error'
             }
         });
@@ -397,8 +381,6 @@ export class UsersService {
                 user_id: data.userId
             },
             errors: {
-                403: 'Not enough privileges',
-                404: 'User not found',
                 422: 'Validation Error'
             }
         });
@@ -423,8 +405,6 @@ export class UsersService {
             body: data.requestBody,
             mediaType: 'application/json',
             errors: {
-                404: 'User not found',
-                409: 'Email already in use',
                 422: 'Validation Error'
             }
         });
@@ -446,8 +426,6 @@ export class UsersService {
                 user_id: data.userId
             },
             errors: {
-                403: 'Superusers cannot delete themselves',
-                404: 'User not found',
                 422: 'Validation Error'
             }
         });
