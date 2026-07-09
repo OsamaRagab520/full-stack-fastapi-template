@@ -45,7 +45,7 @@ export const SidebarLanguage = () => {
           </SidebarMenuButton>
         </DropdownMenuTrigger>
         <DropdownMenuContent
-          side={isMobile ? "top" : "right"}
+          side={isMobile ? "top" : i18n.dir() === "rtl" ? "left" : "right"}
           align="end"
           className="w-(--radix-dropdown-menu-trigger-width) min-w-56"
         >

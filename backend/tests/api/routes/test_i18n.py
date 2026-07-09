@@ -33,3 +33,26 @@ async def test_unsupported_locale_falls_back_to_default(client: AsyncClient) -> 
         headers={"Accept-Language": "de"},
     )
     assert r.json()["detail"] == "Incorrect email or password"
+
+
+async def test_invalid_token_error_translated(client: AsyncClient) -> None:
+    r = await client.get(
+        f"{settings.API_V1_STR}/users/me",
+        headers={
+            "Authorization": "Bearer not-a-real-token",
+            "Accept-Language": "ar",
+        },
+    )
+    assert r.status_code == 403
+    assert r.json()["detail"] == "تعذر التحقق من بيانات الاعتماد"
+
+
+async def test_superuser_privileges_error_translated(
+    client: AsyncClient, normal_user_token_headers: dict[str, str]
+) -> None:
+    r = await client.get(
+        f"{settings.API_V1_STR}/users/",
+        headers={**normal_user_token_headers, "Accept-Language": "ar"},
+    )
+    assert r.status_code == 403
+    assert r.json()["detail"] == "لا يمتلك المستخدم صلاحيات كافية"

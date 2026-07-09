@@ -43,7 +43,7 @@ function UserInfo({ fullName, email }: UserInfoProps) {
 }
 
 export function User({ user }: { user: UserPublic | null | undefined }) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const { logout } = useAuth()
   const { isMobile, setOpenMobile } = useSidebar()
 
@@ -77,7 +77,7 @@ export function User({ user }: { user: UserPublic | null | undefined }) {
           </DropdownMenuTrigger>
           <DropdownMenuContent
             className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
-            side={isMobile ? "bottom" : "right"}
+            side={isMobile ? "bottom" : i18n.dir() === "rtl" ? "left" : "right"}
             align="end"
             sideOffset={4}
           >

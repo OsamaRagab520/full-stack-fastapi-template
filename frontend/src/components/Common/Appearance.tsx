@@ -26,7 +26,7 @@ const ICON_MAP: Record<Theme, LucideIcon> = {
 export const SidebarAppearance = () => {
   const { isMobile } = useSidebar()
   const { setTheme, theme } = useTheme()
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const Icon = ICON_MAP[theme]
 
   return (
@@ -43,7 +43,7 @@ export const SidebarAppearance = () => {
           </SidebarMenuButton>
         </DropdownMenuTrigger>
         <DropdownMenuContent
-          side={isMobile ? "top" : "right"}
+          side={isMobile ? "top" : i18n.dir() === "rtl" ? "left" : "right"}
           align="end"
           className="w-(--radix-dropdown-menu-trigger-width) min-w-56"
         >
