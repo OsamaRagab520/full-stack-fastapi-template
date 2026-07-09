@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-07-09 22:29+0300\n"
+"POT-Creation-Date: 2026-07-10 01:52+0300\n"
 "PO-Revision-Date: 2026-06-28 16:42+0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: ar\n"
@@ -18,6 +18,10 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
+
+#: app/main.py:56
+msgid "Too many requests"
+msgstr "طلبات كثيرة جداً"
 
 #: app/api/routes/utils.py:28
 msgid "Test email sent"
@@ -39,40 +43,71 @@ msgstr "الرمز غير صالح"
 msgid "Could not validate credentials"
 msgstr "تعذر التحقق من بيانات الاعتماد"
 
-#: app/auth/router.py:78
+#: app/auth/router.py:86
 msgid "If that email is registered, we sent a password recovery link"
 msgstr "إذا كان هذا البريد الإلكتروني مسجلاً، فقد أرسلنا رابط استعادة كلمة المرور"
 
-#: app/auth/router.py:101 app/users/router.py:114
+#: app/auth/router.py:109 app/users/router.py:116
 msgid "Password updated successfully"
 msgstr "تم تحديث كلمة المرور بنجاح"
 
-#: app/emails/service.py:73
+#: app/core/validation_i18n.py:10
+#, python-brace-format
+msgid "String should have at least {min_length} characters"
+msgstr "يجب أن يحتوي على {min_length} حرف على الأقل"
+
+#: app/core/validation_i18n.py:11
+#, python-brace-format
+msgid "String should have at most {max_length} characters"
+msgstr "يجب ألا يتجاوز {max_length} حرفاً"
+
+#: app/core/validation_i18n.py:12
+msgid "Field required"
+msgstr "هذا الحقل مطلوب"
+
+#: app/core/validation_i18n.py:13
+#, python-brace-format
+msgid "Value error, {error}"
+msgstr "خطأ في القيمة، {error}"
+
+#: app/core/validation_i18n.py:14
+msgid "Input should be a valid string"
+msgstr "يجب أن يكون الإدخال نصاً صالحاً"
+
+#: app/core/validation_i18n.py:15
+msgid "Input should be a valid boolean"
+msgstr "يجب أن يكون الإدخال قيمة منطقية"
+
+#: app/core/validation_i18n.py:16
+msgid "Input should be a valid integer"
+msgstr "يجب أن يكون الإدخال عدداً صحيحاً"
+
+#: app/emails/service.py:74
 #, python-brace-format
 msgid "{project_name} - Test email"
 msgstr "{project_name} - رسالة اختبار"
 
-#: app/emails/service.py:75
+#: app/emails/service.py:76
 #, python-brace-format
 msgid "Test email for: {email}"
 msgstr "رسالة اختبار لـ: {email}"
 
-#: app/emails/service.py:87
+#: app/emails/service.py:88
 #, python-brace-format
 msgid "{project_name} - Password recovery for user {email}"
 msgstr "{project_name} - استعادة كلمة المرور للمستخدم {email}"
 
-#: app/emails/service.py:96
+#: app/emails/service.py:97
 #, python-brace-format
 msgid "{project_name} - Password Recovery"
 msgstr "{project_name} - استعادة كلمة المرور"
 
-#: app/emails/service.py:100
+#: app/emails/service.py:101
 #, python-brace-format
 msgid "Hello {username}"
 msgstr "مرحباً {username}"
 
-#: app/emails/service.py:103
+#: app/emails/service.py:104
 msgid ""
 "We've received a request to reset your password. You can do it by "
 "clicking the button below:"
@@ -80,47 +115,47 @@ msgstr ""
 "لقد تلقينا طلباً لإعادة تعيين كلمة المرور الخاصة بك. يمكنك القيام بذلك "
 "عبر النقر على الزر أدناه:"
 
-#: app/emails/service.py:108
+#: app/emails/service.py:109
 msgid "Reset password"
 msgstr "إعادة تعيين كلمة المرور"
 
-#: app/emails/service.py:110
+#: app/emails/service.py:111
 msgid "Or copy and paste the following link into your browser:"
 msgstr "أو انسخ الرابط التالي والصقه في متصفحك:"
 
-#: app/emails/service.py:113
+#: app/emails/service.py:114
 #, python-brace-format
 msgid "This password will expire in {valid_hours} hours."
 msgstr "تنتهي صلاحية كلمة المرور هذه خلال {valid_hours} ساعات."
 
-#: app/emails/service.py:119
+#: app/emails/service.py:120
 msgid "If you didn't request a password recovery you can disregard this email."
 msgstr "إذا لم تطلب استعادة كلمة المرور فيمكنك تجاهل هذه الرسالة."
 
-#: app/emails/service.py:134
+#: app/emails/service.py:135
 #, python-brace-format
 msgid "{project_name} - New account for user {username}"
 msgstr "{project_name} - حساب جديد للمستخدم {username}"
 
-#: app/emails/service.py:141
+#: app/emails/service.py:142
 #, python-brace-format
 msgid "{project_name} - New Account"
 msgstr "{project_name} - حساب جديد"
 
-#: app/emails/service.py:145
+#: app/emails/service.py:146
 msgid "Welcome to your new account!"
 msgstr "مرحباً بك في حسابك الجديد!"
 
-#: app/emails/service.py:146
+#: app/emails/service.py:147
 msgid "Here are your account details:"
 msgstr "إليك تفاصيل حسابك:"
 
-#: app/emails/service.py:147
+#: app/emails/service.py:148
 #, python-brace-format
 msgid "Username: {username}"
 msgstr "اسم المستخدم: {username}"
 
-#: app/emails/service.py:148
+#: app/emails/service.py:149
 msgid "Go to Dashboard"
 msgstr "الذهاب إلى لوحة التحكم"
 
@@ -164,7 +199,7 @@ msgstr "المستخدم غير موجود"
 msgid "The user doesn't have enough privileges"
 msgstr "لا يمتلك المستخدم صلاحيات كافية"
 
-#: app/users/router.py:139 app/users/router.py:221
+#: app/users/router.py:141 app/users/router.py:226
 msgid "User deleted successfully"
 msgstr "تم حذف المستخدم بنجاح"
 

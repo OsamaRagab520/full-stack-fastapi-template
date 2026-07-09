@@ -56,3 +56,29 @@ async def test_superuser_privileges_error_translated(
     )
     assert r.status_code == 403
     assert r.json()["detail"] == "لا يمتلك المستخدم صلاحيات كافية"
+
+
+async def test_422_field_required_translated(client: AsyncClient) -> None:
+    """Missing required field in JSON body returns an Arabic 422 msg."""
+    r = await client.post(
+        f"{settings.API_V1_STR}/users/signup",
+        json={},
+        headers={"Accept-Language": "ar"},
+    )
+    assert r.status_code == 422
+    detail = r.json()["detail"]
+    assert isinstance(detail, list)
+    assert any("هذا الحقل مطلوب" in err["msg"] for err in detail)
+
+
+async def test_422_string_too_short_translated(client: AsyncClient) -> None:
+    """Password shorter than min_length returns an Arabic 422 msg."""
+    r = await client.post(
+        f"{settings.API_V1_STR}/users/signup",
+        json={"email": "new@example.com", "password": "abc"},
+        headers={"Accept-Language": "ar"},
+    )
+    assert r.status_code == 422
+    detail = r.json()["detail"]
+    assert isinstance(detail, list)
+    assert any("حرف على الأقل" in err["msg"] for err in detail)

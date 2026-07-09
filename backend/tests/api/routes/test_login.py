@@ -192,3 +192,16 @@ async def test_login_with_argon2_password_keeps_hash(
 
     assert user.hashed_password == original_hash
     assert user.hashed_password.startswith("$argon2")
+
+
+async def test_login_rate_limit(client: AsyncClient) -> None:
+    """Sixth login attempt in the same minute returns 429."""
+    login_data = {
+        "username": "nonexistent@example.com",
+        "password": "wrongpassword",
+    }
+    for _ in range(5):
+        await client.post(f"{settings.API_V1_STR}/login/access-token", data=login_data)
+    r = await client.post(f"{settings.API_V1_STR}/login/access-token", data=login_data)
+    assert r.status_code == 429
+    assert "detail" in r.json()
