@@ -541,3 +541,41 @@ async def test_delete_user_without_privileges(
     )
     assert r.status_code == 403
     assert r.json()["detail"] == "The user doesn't have enough privileges"
+
+
+async def test_update_user_me_invalid_locale(
+    client: AsyncClient, normal_user_token_headers: dict[str, str]
+) -> None:
+    """Setting locale to an unsupported value returns 422."""
+    r = await client.patch(
+        f"{settings.API_V1_STR}/users/me",
+        headers=normal_user_token_headers,
+        json={"locale": "xx"},
+    )
+    assert r.status_code == 422
+
+
+async def test_update_user_me_valid_locale(
+    client: AsyncClient, normal_user_token_headers: dict[str, str]
+) -> None:
+    """Setting locale to a supported value succeeds."""
+    r = await client.patch(
+        f"{settings.API_V1_STR}/users/me",
+        headers=normal_user_token_headers,
+        json={"locale": "ar"},
+    )
+    assert r.status_code == 200
+    assert r.json()["locale"] == "ar"
+
+
+async def test_update_user_invalid_locale_as_superuser(
+    client: AsyncClient, superuser_token_headers: dict[str, str], db: AsyncSession
+) -> None:
+    """Admin update with unsupported locale returns 422."""
+    user = await create_random_user(db)
+    r = await client.patch(
+        f"{settings.API_V1_STR}/users/{user.id}",
+        headers=superuser_token_headers,
+        json={"locale": "zz"},
+    )
+    assert r.status_code == 422
