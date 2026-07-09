@@ -23,7 +23,10 @@ OpenAPI.TOKEN = async () => {
 OpenAPI.HEADERS = async () => ({ "Accept-Language": i18n.language })
 
 const handleApiError = (error: Error) => {
-  if (error instanceof ApiError && [401, 403].includes(error.status)) {
+  // Only an unauthenticated response (bad/expired/missing token) should end the
+  // session. A 403 means the user is authenticated but lacks privileges for this
+  // action — surface it as an error toast, don't log them out.
+  if (error instanceof ApiError && error.status === 401) {
     tokenStore.clear()
     window.location.href = "/login"
   }
