@@ -39,7 +39,7 @@ const EditItem = ({ item, onSuccess }: EditItemProps) => {
       trigger={(open) => (
         <DropdownMenuItem onSelect={(e) => e.preventDefault()} onClick={open}>
           <Pencil />
-          {t("actions.edit")}
+          {t("items:editDialog.title")}
         </DropdownMenuItem>
       )}
       title={t("items:editDialog.title")}

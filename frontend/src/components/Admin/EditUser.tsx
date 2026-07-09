@@ -63,7 +63,7 @@ const EditUser = ({ user, onSuccess }: EditUserProps) => {
       trigger={(open) => (
         <DropdownMenuItem onSelect={(e) => e.preventDefault()} onClick={open}>
           <Pencil />
-          {t("actions.edit")}
+          {t("users:editUser.dialogTitle")}
         </DropdownMenuItem>
       )}
       title={t("users:editUser.dialogTitle")}

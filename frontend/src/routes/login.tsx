@@ -52,7 +52,7 @@ function Login() {
   const formSchema = useMemo(
     () =>
       z.object({
-        username: z.email(),
+        username: z.email({ message: t("validations.emailInvalid") }),
         password: z
           .string()
           .min(1, { message: t("validations.passwordRequired") })

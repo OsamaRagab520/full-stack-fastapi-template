@@ -56,7 +56,7 @@ function SignUp() {
     () =>
       z
         .object({
-          email: z.email(),
+          email: z.email({ message: t("validations.emailInvalid") }),
           full_name: z
             .string()
             .min(1, { message: t("validations.fullNameRequired") }),
@@ -65,7 +65,7 @@ function SignUp() {
             .min(1, { message: t("validations.passwordRequired") })
             .min(8, { message: t("validations.passwordMinLength") }),
           confirm_password: z.string().min(1, {
-            message: t("validations.passwordRequired"),
+            message: t("validations.passwordConfirmRequired"),
           }),
         })
         .refine((data) => data.password === data.confirm_password, {

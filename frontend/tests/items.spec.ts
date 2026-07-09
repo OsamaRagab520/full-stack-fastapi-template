@@ -131,30 +131,40 @@ test.describe("Items empty state", () => {
   })
 })
 
-test("Items list paginates server-side across pages", async ({ page }) => {
-  test.slow() // creating 11 items via the UI takes a while
+test.describe("Items pagination", () => {
+  // Log in as a fresh, empty user; the default storageState is the superuser,
+  // whose item list is polluted by other tests and whose auth would bounce
+  // logInUser's /login visit straight back to the dashboard.
+  test.use({ storageState: { cookies: [], origins: [] } })
 
-  const email = randomEmail()
-  const password = randomPassword()
-  await createUser({ email, password })
-  await logInUser(page, email, password)
-  await page.goto("/items")
+  test("Items list paginates server-side across pages", async ({ page }) => {
+    test.slow() // creating 11 items via the UI takes a while
 
-  const titles: string[] = []
-  for (let i = 0; i < 11; i++) {
-    const title = randomItemTitle()
-    titles.push(title)
-    await page.getByRole("button", { name: "Add Item" }).click()
-    await page.getByLabel("Title").fill(title)
-    await page.getByRole("button", { name: "Save" }).click()
-    await expect(page.getByText("Item created successfully")).toBeVisible()
-  }
+    const email = randomEmail()
+    const password = randomPassword()
+    await createUser({ email, password })
+    await logInUser(page, email, password)
+    await page.goto("/items")
 
-  // Items are ordered newest-first, so the first item created is the oldest
-  // and sits on page 2 (rows 11+). Default page size is 10.
-  const oldest = titles[0]
-  await expect(page.getByRole("cell", { name: oldest })).toBeHidden()
+    const titles: string[] = []
+    for (let i = 0; i < 11; i++) {
+      const title = randomItemTitle()
+      titles.push(title)
+      await page.getByRole("button", { name: "Add Item" }).click()
+      await page.getByLabel("Title").fill(title)
+      await page.getByRole("button", { name: "Save" }).click()
+      // Wait for the dialog to close (the mutation succeeded) before the next
+      // iteration. Asserting on the success toast is racy here: rapid creation
+      // stacks multiple identical toasts, tripping strict-mode matching.
+      await expect(page.getByRole("dialog")).not.toBeVisible()
+    }
 
-  await page.getByRole("button", { name: "Go to next page" }).click()
-  await expect(page.getByRole("cell", { name: oldest })).toBeVisible()
+    // Items are ordered newest-first, so the first item created is the oldest
+    // and sits on page 2 (rows 11+). Default page size is 10.
+    const oldest = titles[0]
+    await expect(page.getByRole("cell", { name: oldest })).toBeHidden()
+
+    await page.getByRole("button", { name: "Go to next page" }).click()
+    await expect(page.getByRole("cell", { name: oldest })).toBeVisible()
+  })
 })
