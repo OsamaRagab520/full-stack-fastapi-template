@@ -19,8 +19,12 @@ Each domain package follows the same shape:
 `models.py` (SQLModel table) · `schemas.py` (Pydantic I/O) · `selectors.py` (reads)
 · `service.py` (writes/mutations) · `exceptions.py` (typed domain errors) · `router.py`
 (endpoints). Domains: `auth/` (also `config.py`, `dependencies.py`, `tokens.py`),
-`users/`, `items/`, `emails/` (`config.py`, `service.py`). Shared infra in `core/`
-(`config.py`, `db.py`, `security.py`).
+`users/`, `items/`, `emails/` (`config.py`, `service.py`, `exceptions.py`). Shared
+infra in `core/`: `config.py`, `db.py`, `exceptions.py` (`HTTPDomainError` base),
+`passwords.py` (pwdlib Argon2/bcrypt hashing), `i18n.py` + `validation_i18n.py`
+(gettext + 422 translation), `rate_limit.py` (slowapi limiter), `time.py`
+(`utc_now`). JWT/token creation lives in `auth/tokens.py` — there is **no**
+`core/security.py`.
 
 **Read/write split:** `selectors.py` owns all data fetching (queries, filters,
 counts, `session.get`) and returns models / `(rows, count)` tuples — never raises
@@ -47,6 +51,13 @@ response. Routers never touch the ORM directly.
   for the domain you need — don't add unrelated keys to `Settings`.
 - **Docs visibility:** Swagger/ReDoc mount only when `ENVIRONMENT` is `local` or
   `staging` (`app/main.py`).
+- **Rate limiting** is per-IP via slowapi (`core/rate_limit.py`). The shared
+  `limiter` is wired in `app/main.py` (`app.state.limiter` + a `RateLimitExceeded`
+  handler returning a translated `429 "Too many requests"`). Apply it with
+  `@limiter.limit("5/minute")` on a route, which **must** then take a
+  `request: Request` parameter (slowapi reads the client IP from it). Current
+  limits: login `5/minute`, password-recovery `3/minute` (`auth/router.py`),
+  signup `10/hour` (`users/router.py`).
 - **User-facing strings are translated**, not hardcoded. Wrap them in `_()` and
   translate via `translate()` at response time. Never return a raw English
   literal as a domain `detail` or `Message`. See the i18n section below.
@@ -78,8 +89,9 @@ and email subjects/bodies) are translated via **Babel gettext** catalogs.
   into the MJML-rendered Jinja2 template. Edit `email-templates/src/*.mjml`
   (using `{{ t.key }}`) and recompile with `bunx mjml` — never hand-edit
   `build/`.
-- **User locale**: `User.locale` (default `"en"`), editable via `UserUpdateMe`.
-  Drives email localization.
+- **User locale**: `User.locale` (default `"en"`), editable via `UserUpdateMe`
+  and `UserCreate`, validated against `SUPPORTED_LANGUAGES` by a `field_validator`
+  in `users/schemas.py` (unsupported codes are rejected). Drives email localization.
 - **Workflow after touching strings**:
   ```bash
   pybabel extract -F babel.cfg -o app/locales/messages.pot .   # find new _() strings
@@ -87,8 +99,13 @@ and email subjects/bodies) are translated via **Babel gettext** catalogs.
   # edit app/locales/<lang>/LC_MESSAGES/messages.po
   pybabel compile -d app/locales                                # build .mo
   ```
-- **Deferred**: Pydantic 422 `ValidationError` messages are still English — see
-  `docs/i18n-pydantic-422.md`.
+- **Pydantic 422 errors are translated** by `validation_exception_handler`
+  (`core/validation_i18n.py`), registered on `RequestValidationError` in
+  `app/main.py`. It maps each error's Pydantic `type` (e.g. `string_too_short`,
+  `missing`) to a translated template via `_PYDANTIC_MSG_MAP`, formatting in the
+  `ctx` values; unmapped types fall back to Pydantic's English `msg`. When you hit
+  an untranslated error type, add a new `_()` template to that map.
+  (`docs/i18n-pydantic-422.md` predates this work and is now historical.)
 
 ## Patterns
 Add an endpoint to an existing domain:

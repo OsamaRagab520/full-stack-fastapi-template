@@ -5,6 +5,7 @@ This file provides guidance to coding agents (Claude Code and other AGENTS.md-aw
 ## Stack
 
 - **Backend**: FastAPI + SQLModel (async) + PostgreSQL + Alembic + PyJWT + pwdlib
+  + slowapi (per-IP rate limiting)
 - **Frontend**: React 19 + TypeScript + Vite + TanStack Router + TanStack Query + shadcn/ui + Tailwind CSS v4
 - **Runtime**: `uv` (Python), `bun` (JS), Docker Compose for full-stack
 - **Linting/formatting**: `ruff` + `mypy --strict` (backend), `biome` (frontend), `prek` for pre-commit hooks
