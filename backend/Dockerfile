@@ -1,4 +1,4 @@
-FROM python:3.11
+FROM python:3.14
 
 ENV PYTHONUNBUFFERED=1
 
@@ -45,4 +45,4 @@ WORKDIR /app/backend/
 # Compile gettext catalogs (.mo) from source (.po)
 RUN pybabel compile -d app/locales
 
-CMD ["fastapi", "run", "--workers", "4", "app/main.py"]
+CMD ["fastapi", "run", "--workers", "4"]

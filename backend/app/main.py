@@ -43,7 +43,7 @@ class LocaleMiddleware(BaseHTTPMiddleware):
 
 
 @asynccontextmanager
-async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
+async def lifespan(_app: FastAPI) -> AsyncGenerator[None]:
     if settings.SENTRY_DSN and settings.ENVIRONMENT != "local":
         sentry_sdk.init(dsn=str(settings.SENTRY_DSN), enable_tracing=True)
     yield

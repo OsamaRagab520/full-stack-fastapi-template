@@ -30,55 +30,37 @@ All of the following are applied and validated (backend: ruff, ruff-format, mypy
 | **Models type refactor** | #2356 | `UserUpdate`/`ItemUpdate` now inherit `SQLModel` directly with explicit optional fields (removed two `# type: ignore`s); regenerated frontend client | Preserved the i18n `locale` field on `UserUpdate`. Makes partial updates correct; verified `model_dump(exclude_unset=True)` behavior unchanged |
 | **Frontend npm mass-update** | #2333 | Aligned all shared deps to upstream versions, incl. **major** bumps `vite` 7→8 and `lucide-react` 0.x→1.x; kept i18n deps (`i18next`, `react-i18next`, `i18next-browser-languagedetector`) | Also bumped `@biomejs/biome` 2.3.14→2.4.16; added `!**/public/assets/images/**/*` to `biome.json` because biome 2.4 newly lints `.svg` files (false-positive `noSvgWithoutTitle` on static logo assets) |
 
-> **Setup note discovered during validation:** compiled gettext catalogs (`*.mo`) are
-> gitignored, so a fresh checkout fails the i18n tests until you run
-> `uv run pybabel compile -d backend/app/locales` (this is the `compile-gettext-catalogs`
-> pre-commit hook). Not a code issue — worth calling out in the README/onboarding.
+### Adapted in the follow-up commit (previously "not adapted")
+
+| Change | Upstream PR | What we did | Notes |
+|---|---|---|---|
+| **Python 3.14 upgrade** | #2352 | Bumped `requires-python`, ruff `target-version = py314`, CI python-version (test-backend / pre-commit / playwright), `Dockerfile` base image; added root `.python-version`; applied the ruff `UP043`/`UP037` modernizations that `py314` enables | **Reverses your earlier 3.11 choice (`25f9683`)** — done per your instruction. The venv already ran 3.14.4, so the runtime was pre-validated (76 tests green). `UP037` unquoted `list["Item"]` → `list[Item]`, safe under Python 3.14 PEP 649 deferred annotations (verified by tests) |
+| **FastAPI `fastapi run` entrypoint** | #2360 | Dropped the explicit `app/main.py` from the Docker `CMD` | Verified: `fastapi run` auto-discovers `app.main:app` |
+| **sqlmodel floor bump** | align w/ #2354 | `>=0.0.21` → `>=0.0.39` | Matches upstream; all tests pass |
+| **Library-skills (FastAPI + SQLModel)** | #2354 | `uvx library-skills --all --claude --tool-skill`: relative symlinks in `.agents/skills/` **and** `.claude/skills/` (fastapi, sqlmodel) + the copied `library-skills` tool skill | Symlinks target `.venv` — see the setup note below |
+
+> **Setup notes for a fresh clone** (neither is a code issue):
+> 1. Compiled gettext catalogs (`*.mo`) are gitignored, so i18n tests fail until you run
+>    `uv run pybabel compile -d backend/app/locales` (the `compile-gettext-catalogs` hook).
+> 2. The library-skills symlinks point into `.venv`, so they only resolve after
+>    `uv sync`; re-run `uvx library-skills --all --claude` if the Python version changes
+>    (the symlink path is version-pinned to `python3.14`).
+> Both are worth calling out in the README / onboarding.
 
 ---
 
 ## 📋 Not adapted — evaluate these
 
-### 1. Python 3.14 upgrade — ⚠️ conflicts with a deliberate choice — #2352
-Upstream moved `3.10 → 3.14`. **You deliberately standardized on 3.11**
-(commit `25f9683` "ci: align setup-python to 3.11"), pinned in three places:
+> Python 3.14 (#2352), the `fastapi run` entrypoint (#2360), and library-skills (#2354)
+> were **since adopted** — see "Adapted in the follow-up commit" above. What remains:
 
-- `backend/pyproject.toml`: `requires-python = ">=3.11,<4.0"` and `target-version = "py311"`
-- `.github/workflows/test-backend.yml`: `python-version: "3.11"`
-- `backend/Dockerfile`: `FROM python:3.11`
-
-**Value:** newer stdlib, perf, and staying on upstream's supported line.
-**Cost/risk:** verify all deps support 3.14; revisit the 3.11 decision.
-**To apply:** bump the four locations above to `3.14`, add a root `.python-version` (`3.14`),
-then `uv sync` and run the full suite. *Recommendation: keep 3.11 unless you have a reason
-to move; this was an intentional decision, not drift.*
-
-### 2. FastAPI `fastapi run` entrypoint simplification — low-risk — #2360
-Upstream dropped the explicit module path from the Docker CMD:
-```dockerfile
-# yours
-CMD ["fastapi", "run", "--workers", "4", "app/main.py"]
-# upstream
-CMD ["fastapi", "run", "--workers", "4"]
-```
-`fastapi-cli` auto-discovers `app/main.py`. Since we bumped FastAPI, this works.
-**Value:** minor cleanup, matches upstream. **Risk:** low. **To apply:** edit
-`backend/Dockerfile` line 48 and rebuild the image to confirm the app boots.
-
-### 3. Library-skills for FastAPI & SQLModel — additive — #2354
-Upstream added AI coding-assistant skills under `.claude/skills/` and `.agents/skills/`
-(git-submodule pointers to `fastapi`/`sqlmodel` skills + a `library-skills` SKILL.md).
-**Value:** better AI assistance for contributors using Claude/agents. **Risk:** none
-(purely additive; pulls submodules). **To apply:** cherry-pick the files from upstream
-`8c6e31a`, or add the two skill submodules manually. Optional.
-
-### 4. `pyproject.toml` housekeeping — cosmetic — #2350, #2353
+### 1. `pyproject.toml` housekeeping — cosmetic — #2350, #2353
 - #2350 sorted keys in `pyproject.toml`.
 - #2353 moved `prek` to top-level dependencies (you already have `prek` in the backend
   `dev` group, so this is largely N/A for our layout).
 **Value:** consistency with upstream diffs. **Risk:** none. **To apply:** optional tidy-up.
 
-### 5. CI / workflow updates — mostly N/A (you disabled non-essential workflows)
+### 2. CI / workflow updates — mostly N/A (you disabled non-essential workflows)
 You run a reduced CI set (several workflows are dispatch-only or `.disabled`), so these are
 low-priority, but noted for completeness:
 - **zizmor security-check update** (#2345) — hardens the security workflow. Worth taking if
