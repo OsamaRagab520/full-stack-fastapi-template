@@ -1,7 +1,8 @@
 import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
-import { PanelLeftIcon } from "lucide-react"
+import { PanelLeftIcon, PanelRightIcon } from "lucide-react"
 import * as React from "react"
+import { useTranslation } from "react-i18next"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -162,7 +163,7 @@ function SidebarProvider({
 }
 
 function Sidebar({
-  side = "left",
+  side: sideProp = "left",
   variant = "sidebar",
   collapsible = "offcanvas",
   className,
@@ -174,6 +175,15 @@ function Sidebar({
   collapsible?: "offcanvas" | "icon" | "none"
 }) {
   const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
+  const { i18n } = useTranslation()
+  // Map the logical `side` to its physical edge so the fixed panel and the
+  // flex-reserved gap land together under `dir="rtl"`.
+  const side =
+    i18n.dir() === "rtl"
+      ? sideProp === "left"
+        ? "right"
+        : "left"
+      : sideProp
 
   if (collapsible === "none") {
     return (
@@ -269,7 +279,9 @@ function SidebarTrigger({
   ...props
 }: React.ComponentProps<typeof Button>) {
   const { toggleSidebar, open } = useSidebar()
+  const { i18n } = useTranslation()
   const sidebarCopy = open ? "Collapse Sidebar" : "Open Sidebar"
+  const Icon = i18n.dir() === "rtl" ? PanelRightIcon : PanelLeftIcon
 
   return (
     <Button
@@ -284,7 +296,7 @@ function SidebarTrigger({
       }}
       {...props}
     >
-      <PanelLeftIcon />
+      <Icon />
       <span className="sr-only">{sidebarCopy}</span>
     </Button>
   )
@@ -521,6 +533,7 @@ function SidebarMenuButton({
 } & VariantProps<typeof sidebarMenuButtonVariants>) {
   const Comp = asChild ? Slot : "button"
   const { isMobile, state } = useSidebar()
+  const { i18n } = useTranslation()
 
   const button = (
     <Comp
@@ -547,7 +560,7 @@ function SidebarMenuButton({
     <Tooltip>
       <TooltipTrigger asChild>{button}</TooltipTrigger>
       <TooltipContent
-        side="right"
+        side={i18n.dir() === "rtl" ? "left" : "right"}
         align="center"
         hidden={state !== "collapsed" || isMobile}
         {...tooltip}
