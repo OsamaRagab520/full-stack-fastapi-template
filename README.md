@@ -1,6 +1,6 @@
 # Full Stack FastAPI Template
 
-A production-ready full-stack web application template built with FastAPI, React, and PostgreSQL. Includes authentication, email, database migrations, end-to-end testing, and Docker-based deployment out of the box.
+A production-ready full-stack web application template built with FastAPI, React, and PostgreSQL. Includes authentication, full-stack internationalization (English/Arabic with RTL), email, database migrations, end-to-end testing, and Docker-based deployment out of the box.
 
 ## Technology Stack
 
@@ -10,6 +10,8 @@ A production-ready full-stack web application template built with FastAPI, React
 - [Pydantic](https://docs.pydantic.dev) — data validation and settings management
 - [PostgreSQL](https://www.postgresql.org) — relational database
 - [Alembic](https://alembic.sqlalchemy.org) — database migrations
+- [Babel](https://babel.pocoo.org) — gettext translation catalogs for API strings
+- [slowapi](https://github.com/laurentS/slowapi) — per-IP rate limiting
 - [Pytest](https://pytest.org) — backend testing
 
 **Frontend**
@@ -18,6 +20,7 @@ A production-ready full-stack web application template built with FastAPI, React
 - [TanStack Query](https://tanstack.com/query) + [TanStack Router](https://tanstack.com/router) — data fetching and routing
 - [Tailwind CSS](https://tailwindcss.com) + [shadcn/ui](https://ui.shadcn.com) — styling and components
 - [Playwright](https://playwright.dev) — end-to-end testing
+- [react-i18next](https://react.i18next.com) — internationalization (English/Arabic, RTL)
 - Auto-generated API client from OpenAPI schema
 
 **Infrastructure**
@@ -28,7 +31,8 @@ A production-ready full-stack web application template built with FastAPI, React
 
 **Security**
 - JWT (JSON Web Token) authentication
-- Secure password hashing (bcrypt)
+- Secure password hashing (Argon2 with bcrypt fallback, via pwdlib)
+- Per-IP rate limiting on authentication endpoints
 - Email-based password recovery
 
 ## Prerequisites
@@ -101,20 +105,22 @@ The services will be available at:
 .
 ├── backend/            # FastAPI application
 │   ├── app/
-│   │   ├── api/        # Route definitions
-│   │   ├── auth/       # Authentication logic
-│   │   ├── core/       # Config, database, security
+│   │   ├── api/        # Router assembly (main.py) + local-only routes
+│   │   ├── auth/       # Authentication domain (login, tokens, deps)
+│   │   ├── core/       # Config, database, hashing, i18n, rate limiting
 │   │   ├── emails/     # Email sending utilities
 │   │   ├── items/      # Example domain module
 │   │   ├── users/      # User domain module
-│   │   ├── models.py   # SQLModel table definitions
+│   │   ├── locales/    # Backend gettext translation catalogs
+│   │   ├── alembic/    # Database migrations
+│   │   ├── models.py   # Cross-domain schemas (e.g. Message)
 │   │   └── main.py     # Application entrypoint
-│   └── alembic/        # Database migrations
 ├── frontend/           # React application
 │   └── src/
 │       ├── client/     # Auto-generated API client
 │       ├── components/ # Shared UI components
 │       ├── hooks/      # Custom React hooks
+│       ├── locales/    # Frontend i18n translation catalogs
 │       └── routes/     # Page components
 ├── scripts/            # Dev and CI utility scripts
 ├── compose.yml         # Production Compose config

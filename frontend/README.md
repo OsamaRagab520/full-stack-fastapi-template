@@ -84,11 +84,13 @@ Then, when you run the frontend, it will use that URL as the base URL for the AP
 The frontend code is structured as follows:
 
 * `frontend/src` - The main frontend code.
-* `frontend/src/assets` - Static assets.
-* `frontend/src/client` - The generated OpenAPI client.
-* `frontend/src/components` -  The different components of the frontend.
+* `frontend/src/client` - The generated OpenAPI client (generated — do not edit by hand).
+* `frontend/src/components` - The different components of the frontend.
 * `frontend/src/hooks` - Custom hooks.
+* `frontend/src/lib` - Utilities and the auth token store (`tokenStore.ts`).
+* `frontend/src/locales` - i18n translation catalogs (react-i18next).
 * `frontend/src/routes` - The different routes of the frontend which include the pages.
+* `frontend/public/assets` - Static assets.
 
 ## End-to-End Testing with Playwright
 

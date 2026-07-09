@@ -27,7 +27,7 @@ $ source .venv/bin/activate
 
 Make sure your editor is using the correct Python virtual environment, with the interpreter at `backend/.venv/bin/python`.
 
-Modify or add SQLModel models for data and SQL tables in `./backend/app/models.py`, API endpoints in `./backend/app/api/`, CRUD (Create, Read, Update, Delete) utils in `./backend/app/crud.py`.
+The backend is organized into domain packages under `./backend/app/` (`auth`, `users`, `items`, `emails`). Each package holds its own `models.py` (SQLModel tables), `schemas.py` (Pydantic I/O), `selectors.py` (reads), `service.py` (writes), `exceptions.py` (typed domain errors), and `router.py` (endpoints); the routers are assembled in `./backend/app/api/main.py`. Shared infrastructure lives in `./backend/app/core/`, and `./backend/app/models.py` holds cross-domain schemas like `Message`. See [../AGENTS.md](../AGENTS.md) and [AGENTS.md](./AGENTS.md) for the full architecture and conventions.
 
 ## VS Code
 
@@ -149,13 +149,16 @@ $ alembic revision --autogenerate -m "Add column last_name to User model"
 $ alembic upgrade head
 ```
 
-If you don't want to use migrations at all, uncomment the lines in the file at `./backend/app/core/db.py` that end in:
+If you don't want to use migrations at all, create the tables directly from the
+SQLModel metadata in `init_db` (`./backend/app/core/db.py`). Note the engine is
+async (`async_engine`), so use `run_sync`:
 
 ```python
-SQLModel.metadata.create_all(engine)
+async with async_engine.begin() as conn:
+    await conn.run_sync(SQLModel.metadata.create_all)
 ```
 
-and comment the line in the file `scripts/prestart.sh` that contains:
+and remove the line in the file `scripts/prestart.sh` that contains:
 
 ```console
 $ alembic upgrade head
