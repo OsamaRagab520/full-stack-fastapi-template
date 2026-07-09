@@ -194,7 +194,7 @@ async def test_login_with_argon2_password_keeps_hash(
     assert user.hashed_password.startswith("$argon2")
 
 
-async def test_login_rate_limit(client: AsyncClient, rate_limiting: None) -> None:
+async def test_login_rate_limit(client: AsyncClient, rate_limiting: None) -> None:  # noqa: ARG001
     """Sixth login attempt in the same minute returns 429."""
     login_data = {
         "username": "nonexistent@example.com",

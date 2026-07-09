@@ -23,7 +23,7 @@ def disable_rate_limiting() -> None:
 
 
 @pytest.fixture
-def rate_limiting() -> Generator[None, None, None]:
+def rate_limiting() -> Generator[None]:
     """Re-enable rate limiting for a single test, then disable it again."""
     limiter.reset()
     limiter.enabled = True

@@ -34,7 +34,7 @@ router = APIRouter(tags=["login"])
 )
 @limiter.limit("5/minute")
 async def login_access_token(
-    request: Request,
+    request: Request,  # noqa: ARG001
     session: SessionDep,
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
 ) -> Token:
@@ -61,7 +61,10 @@ async def test_token(current_user: CurrentUser) -> Any:
 @router.post("/password-recovery/{email}")
 @limiter.limit("3/minute")
 async def recover_password(
-    request: Request, email: str, session: SessionDep, bg: BackgroundTasks
+    request: Request,  # noqa: ARG001
+    email: str,
+    session: SessionDep,
+    bg: BackgroundTasks,
 ) -> Message:
     """
     Password Recovery
