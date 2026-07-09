@@ -18,7 +18,9 @@ class AuthConfig(AppBaseConfig):
             if self.ENVIRONMENT == "local":
                 object.__setattr__(self, "SECRET_KEY", secrets.token_urlsafe(32))
             else:
-                raise ValueError("SECRET_KEY must be set in .env for non-local environments")
+                raise ValueError(
+                    "SECRET_KEY must be set in .env for non-local environments"
+                )
         elif self.SECRET_KEY == "changethis":
             message = (
                 'The value of SECRET_KEY is "changethis", '

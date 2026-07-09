@@ -25,8 +25,10 @@ contract — those live in `../backend/AGENTS.md`.
   `src/lib/tokenStore.ts` (get/set/clear/isAuthenticated); the current user is
   fetched via TanStack Query on the `["currentUser"]` query key. Read/write the
   token only through `tokenStore` or `useAuth` — never raw `localStorage`.
-- **Data flows through TanStack Query.** Server state = queries/mutations keyed
-  consistently; don't fetch with bare `fetch`/`axios` outside the client layer.
+- **User-facing strings go through `react-i18next`.** Never hardcode English
+  labels/headings/toasts. Use `useTranslation()` (`t("ns:key")`) in components
+  and the global `i18n.t(...)` in route `head()` meta (runs outside render).
+  See the i18n section below.
 
 ## Patterns
 - New page: add a file under `src/routes/` (place authenticated pages inside
@@ -35,6 +37,32 @@ contract — those live in `../backend/AGENTS.md`.
 - New UI primitive: add via shadcn/ui into `src/components/`; compose with
   Tailwind v4 utilities and `cn()` from `src/lib/utils.ts`.
 - API errors: surface via `handleError` (`src/utils.ts`) + `useCustomToast`.
+
+## Internationalization (i18n)
+
+The UI is fully localized with **react-i18next** (`src/i18n.ts`). Supported
+languages and the cookie-based detection live there.
+
+- **Catalogs**: `src/locales/<lang>/<namespace>.json`. Namespaces: `common`
+  (default), `auth`, `items`, `users`. In components: `useTranslation()` (default
+  ns `common`) → `t("auth:login.heading")` (feature ns via `:` prefix),
+  `t("validations.passwordRequired")` / `t("actions.save")` (common, bare).
+- **Active language**: stored in the `lang` cookie (set by `LanguageDetector`),
+  detected from cookie → browser. The `LanguageSwitcher`
+  (`components/Common/Language.tsx`) calls `i18n.changeLanguage()` and, when
+  authenticated, PATCHes `User.locale` to persist it.
+- **Backend sync**: `OpenAPI.HEADERS` (`main.tsx`) sends `Accept-Language:
+  i18n.language` on every API call, so backend domain errors/emails come back
+  localized. Frontend toast *titles* are translated here; error *details* arrive
+  already-translated from the backend.
+- **RTL**: `useLanguageDirection` (`hooks/useLanguageDirection.ts`) sets
+  `<html dir>`/`lang` on language change; the Toaster follows via `i18n.dir()`.
+  **Always use Tailwind logical utilities** (`me/ms/pe/ps/start/end`) instead of
+  `mr/ml/pr/pl/right/left` so the layout mirrors under `dir="rtl"`.
+- **Zod + forms**: validation messages must stay live with the language, so build
+  the schema **inside the component** with `useMemo([t])` (not at module scope).
+- **Strings NOT translated**: the generated client (`src/client/`), brand names
+  (e.g. "FastAPI" in `Logo`), and `data-testid` values.
 
 ## Anti-patterns
 - Don't edit generated files (`src/client/**`, `src/routeTree.gen.ts`).

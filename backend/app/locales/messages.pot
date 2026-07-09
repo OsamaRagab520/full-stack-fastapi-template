@@ -1,0 +1,162 @@
+# Translations template for PROJECT.
+# Copyright (C) 2026 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2026-06-28 17:02+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: app/api/routes/utils.py:28
+msgid "Test email sent"
+msgstr ""
+
+#: app/auth/exceptions.py:7
+msgid "Incorrect email or password"
+msgstr ""
+
+#: app/auth/exceptions.py:12
+msgid "Inactive user"
+msgstr ""
+
+#: app/auth/exceptions.py:17
+msgid "Invalid token"
+msgstr ""
+
+#: app/auth/router.py:78
+msgid "If that email is registered, we sent a password recovery link"
+msgstr ""
+
+#: app/auth/router.py:101 app/users/router.py:114
+msgid "Password updated successfully"
+msgstr ""
+
+#: app/emails/service.py:72
+#, python-brace-format
+msgid "{project_name} - Test email"
+msgstr ""
+
+#: app/emails/service.py:73
+#, python-brace-format
+msgid "Test email for: {email}"
+msgstr ""
+
+#: app/emails/service.py:85
+#, python-brace-format
+msgid "{project_name} - Password recovery for user {email}"
+msgstr ""
+
+#: app/emails/service.py:94
+#, python-brace-format
+msgid "{project_name} - Password Recovery"
+msgstr ""
+
+#: app/emails/service.py:98
+#, python-brace-format
+msgid "Hello {username}"
+msgstr ""
+
+#: app/emails/service.py:101
+msgid ""
+"We've received a request to reset your password. You can do it by "
+"clicking the button below:"
+msgstr ""
+
+#: app/emails/service.py:106
+msgid "Reset password"
+msgstr ""
+
+#: app/emails/service.py:108
+msgid "Or copy and paste the following link into your browser:"
+msgstr ""
+
+#: app/emails/service.py:111
+#, python-brace-format
+msgid "This password will expire in {valid_hours} hours."
+msgstr ""
+
+#: app/emails/service.py:117
+msgid "If you didn't request a password recovery you can disregard this email."
+msgstr ""
+
+#: app/emails/service.py:134
+#, python-brace-format
+msgid "{project_name} - New account for user {username}"
+msgstr ""
+
+#: app/emails/service.py:141
+#, python-brace-format
+msgid "{project_name} - New Account"
+msgstr ""
+
+#: app/emails/service.py:145
+msgid "Welcome to your new account!"
+msgstr ""
+
+#: app/emails/service.py:146
+msgid "Here are your account details:"
+msgstr ""
+
+#: app/emails/service.py:147
+#, python-brace-format
+msgid "Username: {username}"
+msgstr ""
+
+#: app/emails/service.py:148
+msgid "Go to Dashboard"
+msgstr ""
+
+#: app/items/exceptions.py:7
+msgid "Item not found"
+msgstr ""
+
+#: app/items/exceptions.py:12
+msgid "Not enough permissions"
+msgstr ""
+
+#: app/items/router.py:109
+msgid "Item deleted successfully"
+msgstr ""
+
+#: app/users/exceptions.py:7
+msgid "The user with this email already exists in the system"
+msgstr ""
+
+#: app/users/exceptions.py:12
+msgid "User with this email already exists"
+msgstr ""
+
+#: app/users/exceptions.py:17
+msgid "Incorrect password"
+msgstr ""
+
+#: app/users/exceptions.py:22
+msgid "New password cannot be the same as the current one"
+msgstr ""
+
+#: app/users/exceptions.py:27
+msgid "Super users are not allowed to delete themselves"
+msgstr ""
+
+#: app/users/exceptions.py:32
+msgid "User not found"
+msgstr ""
+
+#: app/users/exceptions.py:37
+msgid "The user doesn't have enough privileges"
+msgstr ""
+
+#: app/users/router.py:139 app/users/router.py:221
+msgid "User deleted successfully"
+msgstr ""
+

@@ -1,6 +1,7 @@
 import { Trash2 } from "lucide-react"
 import { useState } from "react"
 import { useForm } from "react-hook-form"
+import { useTranslation } from "react-i18next"
 
 import { ItemsService } from "@/client"
 import { Button } from "@/components/ui/button"
@@ -23,12 +24,13 @@ interface DeleteItemProps {
 }
 
 const DeleteItem = ({ id, onSuccess }: DeleteItemProps) => {
+  const { t } = useTranslation()
   const [isOpen, setIsOpen] = useState(false)
   const { handleSubmit } = useForm()
 
   const mutation = useEntityMutation({
     mutationFn: (id: string) => ItemsService.deleteItem({ id: id }),
-    successMessage: "The item was deleted successfully",
+    successMessage: t("items:deletedToast"),
     invalidate: "all",
     onSuccess: () => {
       setIsOpen(false)
@@ -48,22 +50,19 @@ const DeleteItem = ({ id, onSuccess }: DeleteItemProps) => {
         onClick={() => setIsOpen(true)}
       >
         <Trash2 />
-        Delete Item
+        {t("items:delete")}
       </DropdownMenuItem>
       <DialogContent className="sm:max-w-md">
         <form onSubmit={handleSubmit(onSubmit)}>
           <DialogHeader>
-            <DialogTitle>Delete Item</DialogTitle>
-            <DialogDescription>
-              This item will be permanently deleted. Are you sure? You will not
-              be able to undo this action.
-            </DialogDescription>
+            <DialogTitle>{t("items:delete")}</DialogTitle>
+            <DialogDescription>{t("items:deleteWarning")}</DialogDescription>
           </DialogHeader>
 
           <DialogFooter className="mt-4">
             <DialogClose asChild>
               <Button variant="outline" disabled={mutation.isPending}>
-                Cancel
+                {t("actions.cancel")}
               </Button>
             </DialogClose>
             <LoadingButton
@@ -71,7 +70,7 @@ const DeleteItem = ({ id, onSuccess }: DeleteItemProps) => {
               type="submit"
               loading={mutation.isPending}
             >
-              Delete
+              {t("actions.delete")}
             </LoadingButton>
           </DialogFooter>
         </form>

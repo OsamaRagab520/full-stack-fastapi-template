@@ -1,0 +1,34 @@
+{
+  "metaTitle": "Items - FastAPI Template",
+  "heading": "Items",
+  "subtitle": "Create and manage your items",
+  "loadError": "Unable to load items. Please try again.",
+  "empty": "You don't have any items yet",
+  "emptyHint": "Add a new item to get started",
+  "add": "Add Item",
+  "columns": {
+    "id": "ID",
+    "title": "Title",
+    "description": "Description",
+    "actions": "Actions"
+  },
+  "noDescription": "No description",
+  "copyId": "Copy ID",
+  "addDialog": {
+    "title": "Add Item",
+    "description": "Fill in the details to add a new item."
+  },
+  "editDialog": {
+    "title": "Edit Item",
+    "description": "Update the item details below."
+  },
+  "titleLabel": "Title",
+  "titlePlaceholder": "Title",
+  "descriptionLabel": "Description",
+  "descriptionPlaceholder": "Description",
+  "createdToast": "Item created successfully",
+  "updatedToast": "Item updated successfully",
+  "deletedToast": "The item was deleted successfully",
+  "delete": "Delete Item",
+  "deleteWarning": "This item will be permanently deleted. Are you sure? This action cannot be undone."
+}

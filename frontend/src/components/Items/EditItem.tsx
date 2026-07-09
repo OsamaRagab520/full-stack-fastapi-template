@@ -1,7 +1,8 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Pencil } from "lucide-react"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
+import { useTranslation } from "react-i18next"
 import { z } from "zod"
 
 import { type ItemPublic, ItemsService } from "@/client"
@@ -28,12 +29,7 @@ import { Input } from "@/components/ui/input"
 import { LoadingButton } from "@/components/ui/loading-button"
 import { useEntityMutation } from "@/hooks/useEntityMutation"
 
-const formSchema = z.object({
-  title: z.string().min(1, { message: "Title is required" }),
-  description: z.string().optional(),
-})
-
-type FormData = z.infer<typeof formSchema>
+type FormData = { title: string; description?: string }
 
 interface EditItemProps {
   item: ItemPublic
@@ -41,7 +37,17 @@ interface EditItemProps {
 }
 
 const EditItem = ({ item, onSuccess }: EditItemProps) => {
+  const { t } = useTranslation()
   const [isOpen, setIsOpen] = useState(false)
+
+  const formSchema = useMemo(
+    () =>
+      z.object({
+        title: z.string().min(1, { message: t("validations.titleRequired") }),
+        description: z.string().optional(),
+      }),
+    [t],
+  )
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -56,7 +62,7 @@ const EditItem = ({ item, onSuccess }: EditItemProps) => {
   const mutation = useEntityMutation({
     mutationFn: (data: FormData) =>
       ItemsService.updateItem({ id: item.id, requestBody: data }),
-    successMessage: "Item updated successfully",
+    successMessage: t("items:updatedToast"),
     invalidate: ["items"],
     onSuccess: () => {
       setIsOpen(false)
@@ -75,15 +81,15 @@ const EditItem = ({ item, onSuccess }: EditItemProps) => {
         onClick={() => setIsOpen(true)}
       >
         <Pencil />
-        Edit Item
+        {t("actions.edit")}
       </DropdownMenuItem>
       <DialogContent className="sm:max-w-md">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <DialogHeader>
-              <DialogTitle>Edit Item</DialogTitle>
+              <DialogTitle>{t("items:editDialog.title")}</DialogTitle>
               <DialogDescription>
-                Update the item details below.
+                {t("items:editDialog.description")}
               </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
@@ -93,10 +99,15 @@ const EditItem = ({ item, onSuccess }: EditItemProps) => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Title <span className="text-destructive">*</span>
+                      {t("items:titleLabel")}{" "}
+                      <span className="text-destructive">*</span>
                     </FormLabel>
                     <FormControl>
-                      <Input placeholder="Title" type="text" {...field} />
+                      <Input
+                        placeholder={t("items:titlePlaceholder")}
+                        type="text"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -108,9 +119,13 @@ const EditItem = ({ item, onSuccess }: EditItemProps) => {
                 name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Description</FormLabel>
+                    <FormLabel>{t("items:descriptionLabel")}</FormLabel>
                     <FormControl>
-                      <Input placeholder="Description" type="text" {...field} />
+                      <Input
+                        placeholder={t("items:descriptionPlaceholder")}
+                        type="text"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -121,11 +136,11 @@ const EditItem = ({ item, onSuccess }: EditItemProps) => {
             <DialogFooter>
               <DialogClose asChild>
                 <Button variant="outline" disabled={mutation.isPending}>
-                  Cancel
+                  {t("actions.cancel")}
                 </Button>
               </DialogClose>
               <LoadingButton type="submit" loading={mutation.isPending}>
-                Save
+                {t("actions.save")}
               </LoadingButton>
             </DialogFooter>
           </form>

@@ -5,6 +5,7 @@ from fastapi import APIRouter, BackgroundTasks, Depends, Query, status
 
 from app.auth.dependencies import CurrentUser, get_current_active_superuser
 from app.core.db import SessionDep
+from app.core.i18n import _, translate
 from app.emails.config import email_settings
 from app.emails.service import generate_new_account_email, send_email
 from app.models import Message
@@ -60,7 +61,7 @@ async def create_user(
     user = await users_service.create_user(session=session, user_create=user_in)
     if email_settings.emails_enabled and user_in.email:
         email_data = generate_new_account_email(
-            email_to=user_in.email, username=user_in.email
+            username=user_in.email, locale=user_in.locale
         )
         bg.add_task(
             send_email,
@@ -110,7 +111,7 @@ async def update_password_me(
         current_password=body.current_password,
         new_password=body.new_password,
     )
-    return Message(message="Password updated successfully")
+    return Message(message=translate(_("Password updated successfully")))
 
 
 @router.get("/me", response_model=UserPublic)
@@ -135,7 +136,7 @@ async def delete_user_me(session: SessionDep, current_user: CurrentUser) -> Any:
     Delete own user.
     """
     await users_service.delete_own_account(session=session, user=current_user)
-    return Message(message="User deleted successfully")
+    return Message(message=translate(_("User deleted successfully")))
 
 
 @router.post(
@@ -217,4 +218,4 @@ async def delete_user(
     await users_service.delete_user(
         session=session, db_user=user, acting_user=current_user
     )
-    return Message(message="User deleted successfully")
+    return Message(message=translate(_("User deleted successfully")))

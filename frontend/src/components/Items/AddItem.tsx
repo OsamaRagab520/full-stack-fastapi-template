@@ -1,7 +1,8 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Plus } from "lucide-react"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
+import { useTranslation } from "react-i18next"
 import { z } from "zod"
 
 import { type ItemCreate, ItemsService } from "@/client"
@@ -28,15 +29,20 @@ import { Input } from "@/components/ui/input"
 import { LoadingButton } from "@/components/ui/loading-button"
 import { useEntityMutation } from "@/hooks/useEntityMutation"
 
-const formSchema = z.object({
-  title: z.string().min(1, { message: "Title is required" }),
-  description: z.string().optional(),
-})
-
-type FormData = z.infer<typeof formSchema>
+type FormData = { title: string; description?: string }
 
 const AddItem = () => {
+  const { t } = useTranslation()
   const [isOpen, setIsOpen] = useState(false)
+
+  const formSchema = useMemo(
+    () =>
+      z.object({
+        title: z.string().min(1, { message: t("validations.titleRequired") }),
+        description: z.string().optional(),
+      }),
+    [t],
+  )
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -51,7 +57,7 @@ const AddItem = () => {
   const mutation = useEntityMutation({
     mutationFn: (data: ItemCreate) =>
       ItemsService.createItem({ requestBody: data }),
-    successMessage: "Item created successfully",
+    successMessage: t("items:createdToast"),
     invalidate: ["items"],
     onSuccess: () => {
       form.reset()
@@ -67,15 +73,15 @@ const AddItem = () => {
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button className="my-4">
-          <Plus className="mr-2" />
-          Add Item
+          <Plus className="me-2" />
+          {t("items:add")}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Add Item</DialogTitle>
+          <DialogTitle>{t("items:addDialog.title")}</DialogTitle>
           <DialogDescription>
-            Fill in the details to add a new item.
+            {t("items:addDialog.description")}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -87,11 +93,12 @@ const AddItem = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Title <span className="text-destructive">*</span>
+                      {t("items:titleLabel")}{" "}
+                      <span className="text-destructive">*</span>
                     </FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="Title"
+                        placeholder={t("items:titlePlaceholder")}
                         type="text"
                         {...field}
                         required
@@ -107,9 +114,13 @@ const AddItem = () => {
                 name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Description</FormLabel>
+                    <FormLabel>{t("items:descriptionLabel")}</FormLabel>
                     <FormControl>
-                      <Input placeholder="Description" type="text" {...field} />
+                      <Input
+                        placeholder={t("items:descriptionPlaceholder")}
+                        type="text"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -120,11 +131,11 @@ const AddItem = () => {
             <DialogFooter>
               <DialogClose asChild>
                 <Button variant="outline" disabled={mutation.isPending}>
-                  Cancel
+                  {t("actions.cancel")}
                 </Button>
               </DialogClose>
               <LoadingButton type="submit" loading={mutation.isPending}>
-                Save
+                {t("actions.save")}
               </LoadingButton>
             </DialogFooter>
           </form>
