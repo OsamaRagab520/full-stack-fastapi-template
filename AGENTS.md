@@ -88,6 +88,20 @@ uv run prek install -f
 uv run prek run --all-files
 ```
 
+## Commit conventions (enforced)
+
+Commit messages are linted as **Conventional Commits** via a `commit-msg`
+pre-commit hook (`commitlint.config.js`). Format: `<type>(<scope>): <subject>`,
+imperative + lowercase subject, no trailing period, header ≤ 72 chars.
+
+- **Types**: `feat`, `fix`, `refactor`, `perf`, `test`, `docs`, `build`, `ci`,
+  `style`, `chore`, `revert` (only `feat`/`fix` drive a semver bump).
+- **Scopes**: `auth`, `users`, `items`, `emails`, `core`, `deps`, `ci`, `docker`,
+  `frontend`, `docs` — omit the scope for repo-wide changes.
+
+Install hooks from `backend/`: `uv run prek install -f` (this repo uses `prek`,
+not classic pre-commit). Run all hooks manually: `uv run prek run --all-files`.
+
 ## Architecture
 
 Two services share this repo, each with its own deep context node:
