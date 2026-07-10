@@ -1,0 +1,27 @@
+# Dev-only image: runs the Vite dev server with HMR and the Router/Query
+# devtools enabled (import.meta.env.DEV === true).
+#
+# This is NOT used in production. Production/staging serve the compiled app via
+# frontend/Dockerfile (Bun build -> Nginx). This image only exists so the
+# frontend can participate in `docker compose watch` during local development.
+FROM oven/bun:1
+
+WORKDIR /app
+
+# Install dependencies against the same lockfile the production build uses so the
+# dev container resolves identical versions.
+COPY package.json bun.lock /app/
+COPY frontend/package.json /app/frontend/
+
+WORKDIR /app/frontend
+
+RUN bun install
+
+# Source is copied for the first build; subsequent changes are streamed in by the
+# `develop.watch` sync rules in compose.dev.yml.
+COPY ./frontend /app/frontend
+
+EXPOSE 5173
+
+# --host binds 0.0.0.0 so the dev server is reachable from the host through Docker.
+CMD ["bun", "run", "dev", "--host"]

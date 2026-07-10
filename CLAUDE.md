@@ -26,8 +26,13 @@ there — defer to the AGENTS.md files for depth.
 Full-stack dev runs in Docker; **tests and the e2e suite require the Docker stack
 up** (the DB must be reachable).
 
+A root `justfile` wraps these flows — run `just --list` to see all recipes
+(`just up|watch|dev|down`, `just be-test`, `just fe-dev`, `just gen-client`, …).
+The raw commands below still work.
+
 ```bash
-docker compose watch                                   # start full stack, hot reload
+docker compose watch                                   # start full stack, hot reload (frontend = Nginx prod build)
+just dev                                               # …or run the frontend as a live Vite dev server (HMR + devtools)
 docker compose logs backend                            # tail a service
 
 # Backend (from backend/) — uv runtime, ruff + mypy --strict

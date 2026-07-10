@@ -1,0 +1,39 @@
+# Opt-in dev overlay: run the frontend as a live Vite dev server (HMR + devtools,
+# import.meta.env.DEV === true) that participates in `docker compose watch`.
+#
+# Usage:
+#   docker compose -f compose.yml -f compose.override.yml -f compose.dev.yml watch
+#   (or the shortcut: bash scripts/dev-watch.sh)
+#
+# This file is NOT auto-loaded. `docker compose <cmd>` merges only compose.yml +
+# compose.override.yml, so:
+#   - Production/staging deploys (`-f compose.yml`) never see this file.
+#   - CI (test-docker-compose.yml, playwright.yml) keeps testing the Nginx
+#     production build from frontend/Dockerfile, unchanged.
+# Nothing here takes effect unless you pass `-f compose.dev.yml` explicitly.
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile.dev
+    command: bun run dev --host
+    # !override replaces the override's "5173:80" instead of appending to it, so
+    # the host port maps to the Vite dev server (5173) with no duplicate binding.
+    ports: !override
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:8000
+    develop:
+      watch:
+        - path: ./frontend
+          action: sync
+          target: /app/frontend
+          ignore:
+            - ./frontend/node_modules
+            - node_modules
+            - ./frontend/dist
+        # Dependency changes need a fresh `bun install`, so rebuild the image.
+        - path: ./frontend/package.json
+          action: rebuild
+        - path: ./bun.lock
+          action: rebuild

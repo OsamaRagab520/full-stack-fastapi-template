@@ -12,11 +12,33 @@ This file provides guidance to coding agents (Claude Code and other AGENTS.md-aw
 
 ## Commands
 
+### Task runner (`just`)
+A root `justfile` wraps the common flows; run `just` (or `just --list`) to see all
+recipes. Highlights (raw commands below still work if you prefer them):
+
+```bash
+just up | watch | dev | down     # stack: prod-build up / backend hot-reload / frontend dev server / stop
+just logs backend                # tail a service   ·   just shell   → bash in backend
+just be-test [args]              # full backend test run   ·   just be-test-one <path> [args]
+just be-lint | be-format | be-typecheck | hooks
+just be-migrate | be-makemigration "<msg>"
+just fe-dev | fe-lint | fe-build | fe-test
+just gen-client                  # regenerate the OpenAPI client
+```
+
 ### Full stack (Docker)
 ```bash
-docker compose watch          # start with hot reload
+docker compose watch          # start with hot reload (backend only; frontend = Nginx prod build)
 docker compose logs backend   # tail a service's logs
+
+# Frontend HMR + devtools (import.meta.env.DEV === true): opt-in overlay that runs
+# the frontend as a live Vite dev server. Not auto-loaded, so prod/CI are unaffected.
+docker compose -f compose.yml -f compose.override.yml -f compose.dev.yml watch   # or: just dev
 ```
+
+`docker compose watch` alone serves the frontend as the production Nginx build and
+does **not** hot-reload it (only the backend has a `develop.watch`). Use `just dev`
+(the `compose.dev.yml` overlay) for frontend HMR and the Router/Query devtools.
 
 ### Backend (from `backend/`)
 ```bash
