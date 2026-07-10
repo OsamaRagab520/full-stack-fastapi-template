@@ -71,6 +71,13 @@ keep-runtime-typing = true
 [tool.coverage.run]
 source = ["app"]
 dynamic_context = "test_function"
+# Entrypoint/bootstrap scripts run during prestart (not imported by pytest),
+# so they carry no meaningful unit-test coverage; exclude them from the report.
+omit = [
+    "app/initial_data.py",
+    "app/backend_pre_start.py",
+    "app/tests_pre_start.py",
+]
 
 [tool.coverage.report]
 show_missing = true
